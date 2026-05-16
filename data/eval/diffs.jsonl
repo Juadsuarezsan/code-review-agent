@@ -1,0 +1,8 @@
+{"id":"d-01","expected_categories":["bug"],"diff":"diff --git a/x.py b/x.py\n--- a/x.py\n+++ b/x.py\n@@ -1,3 +1,5 @@\n def safe_load(p):\n+    try:\n+        return open(p).read()\n+    except:\n+        return None"}
+{"id":"d-02","expected_categories":["security"],"diff":"diff --git a/y.py b/y.py\n--- a/y.py\n+++ b/y.py\n@@ -1,2 +1,4 @@\n def run_cmd(user_input):\n+    import os\n+    return os.system(user_input)"}
+{"id":"d-03","expected_categories":["security"],"diff":"diff --git a/z.py b/z.py\n--- a/z.py\n+++ b/z.py\n@@ -1,2 +1,3 @@\n def parse(s):\n+    return eval(s)"}
+{"id":"d-04","expected_categories":["style"],"diff":"diff --git a/a.py b/a.py\n--- a/a.py\n+++ b/a.py\n@@ -1,2 +1,3 @@\n def check(x):\n+    return x == None"}
+{"id":"d-05","expected_categories":["test_gap"],"diff":"diff --git a/feature.py b/feature.py\n--- a/feature.py\n+++ b/feature.py\n@@ -1,1 +1,5 @@\n+def public_new_function(a, b):\n+    return a + b\n+\n+def another_public_function():\n+    return 42"}
+{"id":"d-06","expected_categories":[],"diff":"diff --git a/clean.py b/clean.py\n--- a/clean.py\n+++ b/clean.py\n@@ -1,1 +1,3 @@\n def add(a, b):\n+    \"\"\"Add two numbers.\"\"\"\n+    return a + b"}
+{"id":"d-07","expected_categories":["security"],"diff":"diff --git a/q.py b/q.py\n--- a/q.py\n+++ b/q.py\n@@ -1,2 +1,4 @@\n import pickle\n def load(b):\n+    return pickle.loads(b)"}
+{"id":"d-08","expected_categories":["bug"],"diff":"diff --git a/m.py b/m.py\n--- a/m.py\n+++ b/m.py\n@@ -1,2 +1,5 @@\n def get(d, k):\n+    try:\n+        return d[k]\n+    except Exception:\n+        pass"}
