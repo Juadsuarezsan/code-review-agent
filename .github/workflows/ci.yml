@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push: { branches: [main] }
+  pull_request: { branches: [main] }
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11", cache: "pip" }
+
+      - name: Install minimal deps for tests
+        run: |
+          pip install --upgrade pip
+          pip install fastapi==0.115.0 uvicorn==0.32.0 pydantic==2.9.2 \
+                       pydantic-settings==2.6.0 python-dotenv==1.0.1 \
+                       httpx==0.27.2 tenacity==9.0.0 loguru==0.7.2 \
+                       pytest==8.3.3 pytest-asyncio==0.24.0 anyio \
+                       langgraph==0.2.45 langchain-core==0.3.15 \
+                       rank-bm25==0.2.2
+
+      - name: Run tests
+        env:
+          ANTHROPIC_API_KEY: ""
+          WHISPER_BACKEND: stub
+          TTS_BACKEND: stub
+          USE_FAKE_VM: "true"
+        run: pytest tests -q --tb=line -k "not eval_runner or test_eval_runs_and_catches_findings"
