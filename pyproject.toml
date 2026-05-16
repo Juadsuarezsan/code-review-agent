@@ -1,0 +1,28 @@
+    [project]
+    name = "code-review-agent"
+    version = "0.1.0"
+    description = "Code Review Agent — tree-sitter + multi-aspect analyzers + GitHub Action"
+    requires-python = ">=3.11,<3.14"
+    license = { text = "MIT" }
+    dependencies = [
+        "fastapi==0.115.0",
+"uvicorn[standard]==0.32.0",
+"pydantic==2.9.2",
+"pydantic-settings==2.6.0",
+"python-dotenv==1.0.1",
+"httpx==0.27.2",
+"tenacity==9.0.0",
+"loguru==0.7.2",
+"anthropic==0.39.0",
+"langgraph==0.2.45",
+"tree-sitter==0.23.1",
+"tree-sitter-python==0.23.2",
+"ruff==0.6.9",
+"mypy==1.11.2",
+"PyGithub==2.4.0",
+"unidiff==0.7.5",
+"psycopg[binary,pool]==3.2.3",
+    ]
+
+    [project.optional-dependencies]
+    dev = ["pytest==8.3.3", "pytest-asyncio==0.24.0", "ruff==0.6.9", "black==24.10.0", "mypy==1.11.2"]
