@@ -1,0 +1,86 @@
+{
+  "project": "code-review-agent",
+  "generated_at": "2026-05-16T00:00:00Z",
+  "predictions": [
+    {
+      "ticket": "django/django \u00b7 PR fixes off-by-one in paginator slice",
+      "top_intent": "approve / 1 nit",
+      "confidence": 0.88,
+      "alternatives": [
+        {
+          "intent": "missing test for empty page",
+          "confidence": 0.0
+        },
+        {
+          "intent": "docstring drift detected",
+          "confidence": 0.0
+        }
+      ],
+      "inference_ms": 7980.0
+    },
+    {
+      "ticket": "pytest-dev/pytest \u00b7 PR refactors fixture caching",
+      "top_intent": "request changes / 3 issues",
+      "confidence": 0.81,
+      "alternatives": [
+        {
+          "intent": "thread-safety regression",
+          "confidence": 0.0
+        },
+        {
+          "intent": "breaks pytest 7.x compat",
+          "confidence": 0.0
+        }
+      ],
+      "inference_ms": 9210.0
+    },
+    {
+      "ticket": "sympy/sympy \u00b7 PR adds matrix exponential edge case",
+      "top_intent": "approve / 2 nits",
+      "confidence": 0.84,
+      "alternatives": [
+        {
+          "intent": "missing zero-matrix test",
+          "confidence": 0.0
+        },
+        {
+          "intent": "minor typing inconsistency",
+          "confidence": 0.0
+        }
+      ],
+      "inference_ms": 8615.0
+    },
+    {
+      "ticket": "scikit-learn/scikit-learn \u00b7 PR optimizes pairwise distances",
+      "top_intent": "request changes / 1 issue",
+      "confidence": 0.79,
+      "alternatives": [
+        {
+          "intent": "numerical-stability concern",
+          "confidence": 0.0
+        },
+        {
+          "intent": "benchmark missing",
+          "confidence": 0.0
+        }
+      ],
+      "inference_ms": 9842.0
+    },
+    {
+      "ticket": "flask/flask \u00b7 PR removes unused private helper",
+      "top_intent": "approve / 0 nits",
+      "confidence": 0.94,
+      "alternatives": [
+        {
+          "intent": "no callers found via grep",
+          "confidence": 0.0
+        },
+        {
+          "intent": "tests still green",
+          "confidence": 0.0
+        }
+      ],
+      "inference_ms": 6121.0
+    }
+  ]
+}
