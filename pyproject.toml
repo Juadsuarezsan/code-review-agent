@@ -1,28 +1,90 @@
-    [project]
-    name = "code-review-agent"
-    version = "0.1.0"
-    description = "Code Review Agent — tree-sitter + multi-aspect analyzers + GitHub Action"
-    requires-python = ">=3.11,<3.14"
-    license = { text = "MIT" }
-    dependencies = [
-        "fastapi==0.115.0",
-"uvicorn[standard]==0.32.0",
-"pydantic==2.9.2",
-"pydantic-settings==2.6.0",
-"python-dotenv==1.0.1",
-"httpx==0.27.2",
-"tenacity==9.0.0",
-"loguru==0.7.2",
-"anthropic==0.39.0",
-"langgraph==0.2.45",
-"tree-sitter==0.23.1",
-"tree-sitter-python==0.23.2",
-"ruff==0.6.9",
-"mypy==1.11.2",
-"PyGithub==2.4.0",
-"unidiff==0.7.5",
-"psycopg[binary,pool]==3.2.3",
-    ]
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
 
-    [project.optional-dependencies]
-    dev = ["pytest==8.3.3", "pytest-asyncio==0.24.0", "ruff==0.6.9", "black==24.10.0", "mypy==1.11.2"]
+[project]
+name = "code-review-agent"
+version = "0.6.0"
+description = "Code Review Agent — LangGraph multi-aspect PR review (tree-sitter context, ruff, security, performance, Claude) with GitHub inline comments"
+readme = "README.md"
+requires-python = ">=3.11,<3.14"
+license = { text = "MIT" }
+authors = [{ name = "Juan David Suárez Sánchez", email = "juadsuarezsan@unal.edu.co" }]
+dependencies = [
+    "fastapi==0.115.0",
+    "uvicorn[standard]==0.32.0",
+    "pydantic==2.9.2",
+    "pydantic-settings==2.6.0",
+    "python-dotenv==1.0.1",
+    "httpx==0.27.2",
+    "tenacity==9.0.0",
+    "loguru==0.7.2",
+    "anthropic==0.39.0",
+    "langgraph==0.2.45",
+    "tree-sitter==0.23.1",
+    "tree-sitter-python==0.23.2",
+    "ruff==0.6.9",
+    "unidiff==0.7.5",
+    "slowapi==0.1.9",
+    "psycopg[binary,pool]==3.2.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.3.3",
+    "pytest-asyncio==0.24.0",
+    "pytest-cov==5.0.0",
+    "pytest-mock==3.14.0",
+    "respx==0.21.1",
+    "ruff==0.6.9",
+    "black==24.10.0",
+    "mypy==1.11.2",
+]
+# Optional heavy security tooling; the pipeline falls back to the pattern scanner when absent.
+security = ["semgrep==1.90.0"]
+
+[tool.setuptools.packages.find]
+include = ["src*", "eval*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [".venv", "notebooks", "data"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "N"]
+ignore = ["B008"]  # FastAPI Depends() in defaults
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["N802", "E501"]  # long diff fixtures as literal strings
+"scripts/build_eval_set.py" = ["E501"]  # hand-written source snippets as literals
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+extend-exclude = "(\\.venv|notebooks|data)"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unreachable = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["tree_sitter_python", "slowapi", "slowapi.*", "langgraph.*", "psycopg_pool", "psycopg", "psycopg.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "-q --cov=src --cov-report=term-missing --cov-fail-under=70"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.coverage.run]
+branch = false
+source = ["src"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false

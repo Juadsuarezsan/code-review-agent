@@ -1,0 +1,1685 @@
+{
+  "mode": "linter-only",
+  "system": "Linter only (reglas estáticas + ruff + patrones; fallback determinista, sin LLM)",
+  "llm_used": false,
+  "model": null,
+  "generated_at": "2026-09-29T01:30:38+00:00",
+  "dataset": {
+    "path": "data/eval/cases.jsonl",
+    "n_cases": 38,
+    "synthetic": true,
+    "n_ground_truth": 35,
+    "matching": "same file, same category, |line - gt_line| <= 2"
+  },
+  "aggregate": {
+    "n_cases": 38,
+    "n_ground_truth": 35,
+    "n_comments": 33,
+    "true_positives": 32,
+    "false_positives": 1,
+    "matched_truth": 32,
+    "recall": 0.9142857142857143,
+    "precision": 0.9696969696969697,
+    "f1": 0.9411764705882354,
+    "fp_rate": 0.030303030303030304,
+    "comments_per_clean_pr": 0,
+    "mean_latency_ms": 36.26315789473684,
+    "p95_latency_ms": 43.0,
+    "mean_cost_usd": 0.0,
+    "per_category": {
+      "bug": {
+        "ground_truth": 13.0,
+        "recall": 0.7692307692307693,
+        "precision": 1.0,
+        "comments": 10.0
+      },
+      "docs": {
+        "ground_truth": 1.0,
+        "recall": 1.0,
+        "precision": 1.0,
+        "comments": 1.0
+      },
+      "performance": {
+        "ground_truth": 5.0,
+        "recall": 1.0,
+        "precision": 0.8333333333333334,
+        "comments": 6.0
+      },
+      "security": {
+        "ground_truth": 9.0,
+        "recall": 1.0,
+        "precision": 1.0,
+        "comments": 9.0
+      },
+      "style": {
+        "ground_truth": 4.0,
+        "recall": 1.0,
+        "precision": 1.0,
+        "comments": 4.0
+      },
+      "test_gap": {
+        "ground_truth": 3.0,
+        "recall": 1.0,
+        "precision": 1.0,
+        "comments": 3.0
+      }
+    }
+  },
+  "judge": null,
+  "worst_cases": [
+    {
+      "case_id": "syn-010",
+      "title": "Wrong comparison operator (semantic, no linter signal)",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 0,
+      "recall": 0.0,
+      "precision": null,
+      "matched": [],
+      "missed": [
+        {
+          "file": "app/limits.py",
+          "line": 2,
+          "category": "bug",
+          "note": "inverted condition"
+        }
+      ],
+      "false_positives": [],
+      "true_positives": [],
+      "latency_ms": 35,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-011",
+      "title": "Missing return in branch (semantic)",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 0,
+      "recall": 0.0,
+      "precision": null,
+      "matched": [],
+      "missed": [
+        {
+          "file": "app/discount.py",
+          "line": 5,
+          "category": "bug",
+          "note": "value computed but not returned"
+        }
+      ],
+      "false_positives": [],
+      "true_positives": [],
+      "latency_ms": 36,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-013",
+      "title": "Wrong variable used in loop body (semantic)",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 0,
+      "recall": 0.0,
+      "precision": null,
+      "matched": [],
+      "missed": [
+        {
+          "file": "app/totals.py",
+          "line": 4,
+          "category": "bug",
+          "note": "always adds the first row"
+        }
+      ],
+      "false_positives": [],
+      "true_positives": [],
+      "latency_ms": 32,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-004",
+      "title": "Off-by-one in index loop",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 2,
+      "recall": 1.0,
+      "precision": 0.5,
+      "matched": [
+        {
+          "file": "app/windows.py",
+          "line": 3,
+          "category": "bug",
+          "note": "IndexError on last iterations"
+        }
+      ],
+      "missed": [],
+      "false_positives": [
+        {
+          "file": "app/windows.py",
+          "line": 3,
+          "severity": "info",
+          "category": "performance",
+          "body": "`for i in range(len(x))` is slower and less readable than iterating directly.",
+          "suggestion": "for i, item in enumerate(items):",
+          "justification": "Index-based loops add a lookup per iteration and hide intent.",
+          "rule_id": "perf:range-len",
+          "source": "performance",
+          "confidence": 0.6
+        }
+      ],
+      "true_positives": [
+        {
+          "file": "app/windows.py",
+          "line": 3,
+          "severity": "warning",
+          "category": "bug",
+          "body": "`range(len(x) + 1)` iterates one past the last index (IndexError).",
+          "suggestion": null,
+          "justification": "Flagged by static (static:range-len-plus-one).",
+          "rule_id": "static:range-len-plus-one",
+          "source": "static",
+          "confidence": 0.7
+        }
+      ],
+      "latency_ms": 41,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-001",
+      "title": "Config loader swallows every exception",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/config.py",
+          "line": 8,
+          "category": "bug",
+          "note": "bare except hides missing file and JSON errors"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/config.py",
+          "line": 8,
+          "severity": "error",
+          "category": "bug",
+          "body": "Bare `except:` swallows every error, including KeyboardInterrupt and SystemExit.",
+          "suggestion": "except (ValueError, KeyError) as exc:  # name the exceptions you expect",
+          "justification": "Broad handlers hide real failures and make debugging impossible.",
+          "rule_id": "static:bare-except + ruff:E722",
+          "source": "static",
+          "confidence": 0.9
+        }
+      ],
+      "latency_ms": 48,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-002",
+      "title": "Mutable default accumulates across calls",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/registry.py",
+          "line": 1,
+          "category": "bug",
+          "note": "shared default list"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/registry.py",
+          "line": 1,
+          "severity": "error",
+          "category": "bug",
+          "body": "Do not use mutable data structures for argument defaults (B006)",
+          "suggestion": "Replace with `None`; initialize within function",
+          "justification": "Reported by ruff rule B006.",
+          "rule_id": "ruff:B006 + static:mutable-default-arg",
+          "source": "ruff",
+          "confidence": 0.9
+        }
+      ],
+      "latency_ms": 42,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-003",
+      "title": "sort() result assigned",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/ranking.py",
+          "line": 2,
+          "category": "bug",
+          "note": "list.sort returns None"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/ranking.py",
+          "line": 2,
+          "severity": "error",
+          "category": "bug",
+          "body": "`list.sort()` returns None; the assignment discards the list.",
+          "suggestion": "items.sort()  # in place\n# or: ordered = sorted(items)",
+          "justification": "Flagged by static (static:sort-result-assigned).",
+          "rule_id": "static:sort-result-assigned",
+          "source": "static",
+          "confidence": 0.95
+        }
+      ],
+      "latency_ms": 40,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-005",
+      "title": "Identity comparison with literal",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/status.py",
+          "line": 2,
+          "category": "bug",
+          "note": "is compares identity"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/status.py",
+          "line": 2,
+          "severity": "error",
+          "category": "bug",
+          "body": "`is` compares identity, not equality; comparing with a literal is a bug.",
+          "suggestion": "Use `==` / `!=` for value comparison.",
+          "justification": "Flagged by static (static:is-literal).",
+          "rule_id": "static:is-literal + ruff:F632",
+          "source": "static",
+          "confidence": 0.9
+        }
+      ],
+      "latency_ms": 37,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-006",
+      "title": "Exception handler with pass",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/cache.py",
+          "line": 4,
+          "category": "bug",
+          "note": "silently returns None"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/cache.py",
+          "line": 4,
+          "severity": "error",
+          "category": "bug",
+          "body": "Exception handler silently swallows the error with `pass`.",
+          "suggestion": "except SomeError as exc:\n    logger.warning('...: %s', exc)\n    raise",
+          "justification": "Silent failures hide bugs and corrupt state downstream.",
+          "rule_id": "static:swallowed-exception",
+          "source": "static",
+          "confidence": 0.9
+        }
+      ],
+      "latency_ms": 35,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-007",
+      "title": "List mutated while iterating",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/filters.py",
+          "line": 4,
+          "category": "bug",
+          "note": "skips elements after removal"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/filters.py",
+          "line": 4,
+          "severity": "error",
+          "category": "bug",
+          "body": "`items` is mutated while being iterated; elements get skipped.",
+          "suggestion": "for item in list(items):  # iterate over a copy",
+          "justification": "Mutating a list during iteration shifts indices.",
+          "rule_id": "static:mutate-while-iterating",
+          "source": "static",
+          "confidence": 0.85
+        }
+      ],
+      "latency_ms": 34,
+      "cost_usd": 0.0,
+      "errors": []
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "syn-001",
+      "title": "Config loader swallows every exception",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/config.py",
+          "line": 8,
+          "category": "bug",
+          "note": "bare except hides missing file and JSON errors"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/config.py",
+          "line": 8,
+          "severity": "error",
+          "category": "bug",
+          "body": "Bare `except:` swallows every error, including KeyboardInterrupt and SystemExit.",
+          "suggestion": "except (ValueError, KeyError) as exc:  # name the exceptions you expect",
+          "justification": "Broad handlers hide real failures and make debugging impossible.",
+          "rule_id": "static:bare-except + ruff:E722",
+          "source": "static",
+          "confidence": 0.9
+        }
+      ],
+      "latency_ms": 48,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-002",
+      "title": "Mutable default accumulates across calls",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/registry.py",
+          "line": 1,
+          "category": "bug",
+          "note": "shared default list"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/registry.py",
+          "line": 1,
+          "severity": "error",
+          "category": "bug",
+          "body": "Do not use mutable data structures for argument defaults (B006)",
+          "suggestion": "Replace with `None`; initialize within function",
+          "justification": "Reported by ruff rule B006.",
+          "rule_id": "ruff:B006 + static:mutable-default-arg",
+          "source": "ruff",
+          "confidence": 0.9
+        }
+      ],
+      "latency_ms": 42,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-003",
+      "title": "sort() result assigned",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/ranking.py",
+          "line": 2,
+          "category": "bug",
+          "note": "list.sort returns None"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/ranking.py",
+          "line": 2,
+          "severity": "error",
+          "category": "bug",
+          "body": "`list.sort()` returns None; the assignment discards the list.",
+          "suggestion": "items.sort()  # in place\n# or: ordered = sorted(items)",
+          "justification": "Flagged by static (static:sort-result-assigned).",
+          "rule_id": "static:sort-result-assigned",
+          "source": "static",
+          "confidence": 0.95
+        }
+      ],
+      "latency_ms": 40,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-004",
+      "title": "Off-by-one in index loop",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 2,
+      "recall": 1.0,
+      "precision": 0.5,
+      "matched": [
+        {
+          "file": "app/windows.py",
+          "line": 3,
+          "category": "bug",
+          "note": "IndexError on last iterations"
+        }
+      ],
+      "missed": [],
+      "false_positives": [
+        {
+          "file": "app/windows.py",
+          "line": 3,
+          "severity": "info",
+          "category": "performance",
+          "body": "`for i in range(len(x))` is slower and less readable than iterating directly.",
+          "suggestion": "for i, item in enumerate(items):",
+          "justification": "Index-based loops add a lookup per iteration and hide intent.",
+          "rule_id": "perf:range-len",
+          "source": "performance",
+          "confidence": 0.6
+        }
+      ],
+      "true_positives": [
+        {
+          "file": "app/windows.py",
+          "line": 3,
+          "severity": "warning",
+          "category": "bug",
+          "body": "`range(len(x) + 1)` iterates one past the last index (IndexError).",
+          "suggestion": null,
+          "justification": "Flagged by static (static:range-len-plus-one).",
+          "rule_id": "static:range-len-plus-one",
+          "source": "static",
+          "confidence": 0.7
+        }
+      ],
+      "latency_ms": 41,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-005",
+      "title": "Identity comparison with literal",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/status.py",
+          "line": 2,
+          "category": "bug",
+          "note": "is compares identity"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/status.py",
+          "line": 2,
+          "severity": "error",
+          "category": "bug",
+          "body": "`is` compares identity, not equality; comparing with a literal is a bug.",
+          "suggestion": "Use `==` / `!=` for value comparison.",
+          "justification": "Flagged by static (static:is-literal).",
+          "rule_id": "static:is-literal + ruff:F632",
+          "source": "static",
+          "confidence": 0.9
+        }
+      ],
+      "latency_ms": 37,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-006",
+      "title": "Exception handler with pass",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/cache.py",
+          "line": 4,
+          "category": "bug",
+          "note": "silently returns None"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/cache.py",
+          "line": 4,
+          "severity": "error",
+          "category": "bug",
+          "body": "Exception handler silently swallows the error with `pass`.",
+          "suggestion": "except SomeError as exc:\n    logger.warning('...: %s', exc)\n    raise",
+          "justification": "Silent failures hide bugs and corrupt state downstream.",
+          "rule_id": "static:swallowed-exception",
+          "source": "static",
+          "confidence": 0.9
+        }
+      ],
+      "latency_ms": 35,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-007",
+      "title": "List mutated while iterating",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/filters.py",
+          "line": 4,
+          "category": "bug",
+          "note": "skips elements after removal"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/filters.py",
+          "line": 4,
+          "severity": "error",
+          "category": "bug",
+          "body": "`items` is mutated while being iterated; elements get skipped.",
+          "suggestion": "for item in list(items):  # iterate over a copy",
+          "justification": "Mutating a list during iteration shifts indices.",
+          "rule_id": "static:mutate-while-iterating",
+          "source": "static",
+          "confidence": 0.85
+        }
+      ],
+      "latency_ms": 34,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-008",
+      "title": "Resource leak: file never closed",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/reader.py",
+          "line": 2,
+          "category": "bug",
+          "note": "handle not closed"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/reader.py",
+          "line": 2,
+          "severity": "warning",
+          "category": "bug",
+          "body": "File handle opened without a context manager may leak.",
+          "suggestion": "with open(path, encoding='utf-8') as fh:",
+          "justification": "Flagged by static (static:open-without-with).",
+          "rule_id": "static:open-without-with + ruff:SIM115",
+          "source": "static",
+          "confidence": 0.85
+        }
+      ],
+      "latency_ms": 73,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-009",
+      "title": "Validation via assert in production code",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/orders.py",
+          "line": 2,
+          "category": "bug",
+          "note": "stripped under -O"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/orders.py",
+          "line": 2,
+          "severity": "warning",
+          "category": "bug",
+          "body": "`assert` is stripped with `python -O`; do not use it for runtime validation.",
+          "suggestion": "if not condition:\n    raise ValueError('...')",
+          "justification": "Flagged by static (static:assert-in-prod).",
+          "rule_id": "static:assert-in-prod",
+          "source": "static",
+          "confidence": 0.6
+        }
+      ],
+      "latency_ms": 35,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-010",
+      "title": "Wrong comparison operator (semantic, no linter signal)",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 0,
+      "recall": 0.0,
+      "precision": null,
+      "matched": [],
+      "missed": [
+        {
+          "file": "app/limits.py",
+          "line": 2,
+          "category": "bug",
+          "note": "inverted condition"
+        }
+      ],
+      "false_positives": [],
+      "true_positives": [],
+      "latency_ms": 35,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-011",
+      "title": "Missing return in branch (semantic)",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 0,
+      "recall": 0.0,
+      "precision": null,
+      "matched": [],
+      "missed": [
+        {
+          "file": "app/discount.py",
+          "line": 5,
+          "category": "bug",
+          "note": "value computed but not returned"
+        }
+      ],
+      "false_positives": [],
+      "true_positives": [],
+      "latency_ms": 36,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-012",
+      "title": "Average divides by len without guard",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/stats.py",
+          "line": 2,
+          "category": "bug",
+          "note": "guard removed: ZeroDivisionError on empty list"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/stats.py",
+          "line": 2,
+          "severity": "info",
+          "category": "bug",
+          "body": "Division by `len(...)` raises ZeroDivisionError on empty input.",
+          "suggestion": "total / len(items) if items else 0.0",
+          "justification": "Flagged by static (static:division-by-len).",
+          "rule_id": "static:division-by-len",
+          "source": "static",
+          "confidence": 0.5
+        }
+      ],
+      "latency_ms": 37,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-013",
+      "title": "Wrong variable used in loop body (semantic)",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 0,
+      "recall": 0.0,
+      "precision": null,
+      "matched": [],
+      "missed": [
+        {
+          "file": "app/totals.py",
+          "line": 4,
+          "category": "bug",
+          "note": "always adds the first row"
+        }
+      ],
+      "false_positives": [],
+      "true_positives": [],
+      "latency_ms": 32,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-014",
+      "title": "Shell command built from user input",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/backup.py",
+          "line": 5,
+          "category": "security",
+          "note": "CWE-78 command injection"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/backup.py",
+          "line": 5,
+          "severity": "error",
+          "category": "security",
+          "body": "`os.system`/`os.popen` run through a shell; user input becomes a command. [CWE-78].",
+          "suggestion": "subprocess.run([\"cmd\", arg], check=True)",
+          "justification": "Matches pattern rule `shell-injection-system` (CWE-78).",
+          "rule_id": "pattern:shell-injection-system",
+          "source": "pattern",
+          "confidence": 0.9
+        }
+      ],
+      "latency_ms": 35,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-015",
+      "title": "eval on request payload",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/calc.py",
+          "line": 2,
+          "category": "security",
+          "note": "CWE-95"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/calc.py",
+          "line": 2,
+          "severity": "error",
+          "category": "security",
+          "body": "`eval()` executes arbitrary code from its argument. [CWE-95].",
+          "suggestion": "ast.literal_eval(value)  # for literals",
+          "justification": "Matches pattern rule `code-injection-eval` (CWE-95).",
+          "rule_id": "pattern:code-injection-eval",
+          "source": "pattern",
+          "confidence": 0.9
+        }
+      ],
+      "latency_ms": 35,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-016",
+      "title": "pickle from network bytes",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/session.py",
+          "line": 5,
+          "category": "security",
+          "note": "CWE-502"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/session.py",
+          "line": 5,
+          "severity": "error",
+          "category": "security",
+          "body": "Deserializing untrusted data with pickle/marshal is remote code execution. [CWE-502].",
+          "suggestion": "json.loads(payload)",
+          "justification": "Matches pattern rule `unsafe-deserialization-pickle` (CWE-502).",
+          "rule_id": "pattern:unsafe-deserialization-pickle",
+          "source": "pattern",
+          "confidence": 0.9
+        }
+      ],
+      "latency_ms": 34,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-017",
+      "title": "SQL built with f-string",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/users.py",
+          "line": 2,
+          "category": "security",
+          "note": "CWE-89"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/users.py",
+          "line": 2,
+          "severity": "error",
+          "category": "security",
+          "body": "SQL statement built with string formatting; use parameter binding. [CWE-89].",
+          "suggestion": "cursor.execute(\"SELECT ... WHERE id = %s\", (user_id,))",
+          "justification": "Matches pattern rule `sql-injection-format` (CWE-89).",
+          "rule_id": "pattern:sql-injection-format",
+          "source": "pattern",
+          "confidence": 0.85
+        }
+      ],
+      "latency_ms": 33,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-018",
+      "title": "Hard-coded API token",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/client.py",
+          "line": 1,
+          "category": "security",
+          "note": "CWE-798"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/client.py",
+          "line": 1,
+          "severity": "error",
+          "category": "security",
+          "body": "Hard-coded credential in source code. [CWE-798].",
+          "suggestion": "os.environ[\"API_KEY\"]  # load from the environment or a secret manager",
+          "justification": "Matches pattern rule `hardcoded-secret` (CWE-798).",
+          "rule_id": "pattern:hardcoded-secret",
+          "source": "pattern",
+          "confidence": 0.75
+        }
+      ],
+      "latency_ms": 33,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-019",
+      "title": "TLS verification disabled and no timeout",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/fetch.py",
+          "line": 5,
+          "category": "security",
+          "note": "CWE-295 (also missing timeout)"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/fetch.py",
+          "line": 5,
+          "severity": "warning",
+          "category": "security",
+          "body": "TLS certificate verification disabled; enables man-in-the-middle attacks. [CWE-295].",
+          "suggestion": "requests.get(url, timeout=10)",
+          "justification": "Matches pattern rule `tls-verify-disabled` (CWE-295).",
+          "rule_id": "pattern:tls-verify-disabled + pattern:http-no-timeout",
+          "source": "pattern",
+          "confidence": 0.85
+        }
+      ],
+      "latency_ms": 31,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-020",
+      "title": "yaml.load without SafeLoader",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/settings.py",
+          "line": 5,
+          "category": "security",
+          "note": "CWE-502"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/settings.py",
+          "line": 5,
+          "severity": "error",
+          "category": "security",
+          "body": "`yaml.load` without `SafeLoader` instantiates arbitrary Python objects. [CWE-502].",
+          "suggestion": "yaml.safe_load(stream)",
+          "justification": "Matches pattern rule `unsafe-yaml-load` (CWE-502).",
+          "rule_id": "pattern:unsafe-yaml-load",
+          "source": "pattern",
+          "confidence": 0.9
+        }
+      ],
+      "latency_ms": 32,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-021",
+      "title": "Predictable password-reset token",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/reset.py",
+          "line": 5,
+          "category": "security",
+          "note": "CWE-330"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/reset.py",
+          "line": 5,
+          "severity": "warning",
+          "category": "security",
+          "body": "`random` is not cryptographically secure for tokens or secrets. [CWE-330].",
+          "suggestion": "secrets.token_urlsafe(32)",
+          "justification": "Matches pattern rule `insecure-random` (CWE-330).",
+          "rule_id": "pattern:insecure-random",
+          "source": "pattern",
+          "confidence": 0.8
+        }
+      ],
+      "latency_ms": 33,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-022",
+      "title": "subprocess with shell=True and f-string",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/convert.py",
+          "line": 5,
+          "category": "security",
+          "note": "CWE-78"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/convert.py",
+          "line": 5,
+          "severity": "error",
+          "category": "security",
+          "body": "`shell=True` enables command injection when any argument is user controlled. [CWE-78].",
+          "suggestion": "subprocess.run([\"cmd\", arg], shell=False)",
+          "justification": "Matches pattern rule `shell-injection-shell-true` (CWE-78).",
+          "rule_id": "pattern:shell-injection-shell-true + pattern:subprocess-fstring",
+          "source": "pattern",
+          "confidence": 0.85
+        }
+      ],
+      "latency_ms": 31,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-023",
+      "title": "Quadratic string building",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/render.py",
+          "line": 4,
+          "category": "performance",
+          "note": "O(n^2) copying"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/render.py",
+          "line": 4,
+          "severity": "warning",
+          "category": "performance",
+          "body": "String `out` grows by `+=` inside a loop (quadratic copying).",
+          "suggestion": "parts.append(piece)  # then ''.join(parts) after the loop",
+          "justification": "Each `+=` copies the whole string; use a list and join once.",
+          "rule_id": "perf:quadratic-str-concat",
+          "source": "performance",
+          "confidence": 0.7
+        }
+      ],
+      "latency_ms": 31,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-024",
+      "title": "List membership inside loop",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/dedupe.py",
+          "line": 5,
+          "category": "performance",
+          "note": "O(n^2) membership"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/dedupe.py",
+          "line": 5,
+          "severity": "warning",
+          "category": "performance",
+          "body": "Membership test `in seen` on a list inside a loop is O(n) per check.",
+          "suggestion": "seen_set = set(seen)  # then `in seen_set`",
+          "justification": "Lists scan linearly; sets and dicts test membership in O(1).",
+          "rule_id": "perf:list-membership-in-loop",
+          "source": "performance",
+          "confidence": 0.7
+        }
+      ],
+      "latency_ms": 34,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-025",
+      "title": "N+1 query in loop",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/report.py",
+          "line": 4,
+          "category": "performance",
+          "note": "one query per id"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/report.py",
+          "line": 4,
+          "severity": "warning",
+          "category": "performance",
+          "body": "I/O call (HTTP or database) inside a loop: one round-trip per element (N+1).",
+          "suggestion": "Batch the requests / use `WHERE id IN (...)` / `asyncio.gather`.",
+          "justification": "Per-item round-trips dominate latency; batching removes the multiplier.",
+          "rule_id": "perf:n-plus-one",
+          "source": "performance",
+          "confidence": 0.65
+        }
+      ],
+      "latency_ms": 34,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-026",
+      "title": "Regex compiled inside loop",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/match.py",
+          "line": 7,
+          "category": "performance",
+          "note": "recompiled per iteration"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/match.py",
+          "line": 7,
+          "severity": "warning",
+          "category": "performance",
+          "body": "`re.compile` inside a loop recompiles the same pattern on every iteration.",
+          "suggestion": "PATTERN = re.compile(...)  # at module level",
+          "justification": "Compiling is expensive relative to matching; hoist it out of the loop.",
+          "rule_id": "perf:recompile-in-loop",
+          "source": "performance",
+          "confidence": 0.8
+        }
+      ],
+      "latency_ms": 35,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-027",
+      "title": "Blocking sleep in coroutine",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/poller.py",
+          "line": 6,
+          "category": "performance",
+          "note": "blocks the event loop"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/poller.py",
+          "line": 6,
+          "severity": "error",
+          "category": "performance",
+          "body": "`time.sleep` inside an `async def` blocks the whole event loop.",
+          "suggestion": "await asyncio.sleep(seconds)",
+          "justification": "Blocking calls stall every other coroutine.",
+          "rule_id": "perf:blocking-sleep-in-async",
+          "source": "performance",
+          "confidence": 0.9
+        }
+      ],
+      "latency_ms": 34,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-028",
+      "title": "None compared with ==",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/nullable.py",
+          "line": 2,
+          "category": "style",
+          "note": "E711"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/nullable.py",
+          "line": 2,
+          "severity": "warning",
+          "category": "style",
+          "body": "Compare with `None` using `is` / `is not`.",
+          "suggestion": "if value is None:",
+          "justification": "Flagged by static (static:eq-none).",
+          "rule_id": "static:eq-none + ruff:E711",
+          "source": "static",
+          "confidence": 0.9
+        }
+      ],
+      "latency_ms": 34,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-029",
+      "title": "type() equality and print debugging",
+      "clean": false,
+      "n_ground_truth": 2,
+      "n_comments": 2,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/coerce.py",
+          "line": 2,
+          "category": "style",
+          "note": "E721"
+        },
+        {
+          "file": "app/coerce.py",
+          "line": 3,
+          "category": "style",
+          "note": "print in prod"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/coerce.py",
+          "line": 2,
+          "severity": "warning",
+          "category": "style",
+          "body": "Use `is` and `is not` for type comparisons, or `isinstance()` for isinstance checks (E721)",
+          "suggestion": null,
+          "justification": "Reported by ruff rule E721.",
+          "rule_id": "ruff:E721 + static:type-equality",
+          "source": "ruff",
+          "confidence": 0.85
+        },
+        {
+          "file": "app/coerce.py",
+          "line": 3,
+          "severity": "info",
+          "category": "style",
+          "body": "Prefer structured logging over `print()` in production code.",
+          "suggestion": "logger.info('...')",
+          "justification": "Flagged by static (static:print-in-prod).",
+          "rule_id": "static:print-in-prod",
+          "source": "static",
+          "confidence": 0.6
+        }
+      ],
+      "latency_ms": 34,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-030",
+      "title": "Builtin shadowed and TODO left behind",
+      "clean": false,
+      "n_ground_truth": 2,
+      "n_comments": 2,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/ids.py",
+          "line": 2,
+          "category": "style",
+          "note": "shadows builtin"
+        },
+        {
+          "file": "app/ids.py",
+          "line": 3,
+          "category": "docs",
+          "note": "TODO marker"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/ids.py",
+          "line": 2,
+          "severity": "info",
+          "category": "style",
+          "body": "Assignment shadows a Python builtin.",
+          "suggestion": null,
+          "justification": "Flagged by static (static:shadow-builtin).",
+          "rule_id": "static:shadow-builtin",
+          "source": "static",
+          "confidence": 0.6
+        },
+        {
+          "file": "app/ids.py",
+          "line": 3,
+          "severity": "info",
+          "category": "docs",
+          "body": "TODO/FIXME marker left in code; link it to an issue or resolve it.",
+          "suggestion": null,
+          "justification": "Flagged by static (static:todo-marker).",
+          "rule_id": "static:todo-marker",
+          "source": "static",
+          "confidence": 0.9
+        }
+      ],
+      "latency_ms": 35,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-031",
+      "title": "New public function without tests",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/pricing.py",
+          "line": 5,
+          "category": "test_gap",
+          "note": "no test added"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/pricing.py",
+          "line": 5,
+          "severity": "warning",
+          "category": "test_gap",
+          "body": "`gross_margin` changed and the PR adds no tests.",
+          "suggestion": "Add `test_gross_margin` in tests/test_pricing.py covering the new branch.",
+          "justification": "Untested public behaviour regresses silently.",
+          "rule_id": "test_gap:public-fn-without-tests",
+          "source": "test_gap",
+          "confidence": 0.7
+        }
+      ],
+      "latency_ms": 33,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-032",
+      "title": "Modified branch not covered by test changes",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/shipping.py",
+          "line": 4,
+          "category": "test_gap",
+          "note": "new branch untested"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/shipping.py",
+          "line": 4,
+          "severity": "warning",
+          "category": "test_gap",
+          "body": "`cost` changed but the test changes in this PR never reference it.",
+          "suggestion": "Add `test_cost` in tests/test_shipping.py covering the new branch.",
+          "justification": "Untested public behaviour regresses silently.",
+          "rule_id": "test_gap:public-fn-without-tests",
+          "source": "test_gap",
+          "confidence": 0.55
+        }
+      ],
+      "latency_ms": 33,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-033",
+      "title": "New method on service class without tests",
+      "clean": false,
+      "n_ground_truth": 1,
+      "n_comments": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "matched": [
+        {
+          "file": "app/service.py",
+          "line": 5,
+          "category": "test_gap",
+          "note": "no test"
+        }
+      ],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [
+        {
+          "file": "app/service.py",
+          "line": 5,
+          "severity": "warning",
+          "category": "test_gap",
+          "body": "`Service.restart` changed and the PR adds no tests.",
+          "suggestion": "Add `test_restart` in tests/test_service.py covering the new branch.",
+          "justification": "Untested public behaviour regresses silently.",
+          "rule_id": "test_gap:public-fn-without-tests",
+          "source": "test_gap",
+          "confidence": 0.7
+        }
+      ],
+      "latency_ms": 35,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-034",
+      "title": "Clean refactor: comprehension and docstring",
+      "clean": true,
+      "n_ground_truth": 0,
+      "n_comments": 0,
+      "recall": null,
+      "precision": null,
+      "matched": [],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [],
+      "latency_ms": 35,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-035",
+      "title": "Clean: explicit exception and logging",
+      "clean": true,
+      "n_ground_truth": 0,
+      "n_comments": 0,
+      "recall": null,
+      "precision": null,
+      "matched": [],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [],
+      "latency_ms": 36,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-036",
+      "title": "Clean: dataclass and type hints",
+      "clean": true,
+      "n_ground_truth": 0,
+      "n_comments": 0,
+      "recall": null,
+      "precision": null,
+      "matched": [],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [],
+      "latency_ms": 43,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-037",
+      "title": "Clean: safe subprocess and timeout",
+      "clean": true,
+      "n_ground_truth": 0,
+      "n_comments": 0,
+      "recall": null,
+      "precision": null,
+      "matched": [],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [],
+      "latency_ms": 35,
+      "cost_usd": 0.0,
+      "errors": []
+    },
+    {
+      "case_id": "syn-038",
+      "title": "Clean: set-based membership and early return",
+      "clean": true,
+      "n_ground_truth": 0,
+      "n_comments": 0,
+      "recall": null,
+      "precision": null,
+      "matched": [],
+      "missed": [],
+      "false_positives": [],
+      "true_positives": [],
+      "latency_ms": 35,
+      "cost_usd": 0.0,
+      "errors": []
+    }
+  ]
+}

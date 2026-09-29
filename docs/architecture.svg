@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560" viewBox="0 0 980 560" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="13">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <style>
+      .box { fill:#f8fafc; stroke:#334155; stroke-width:1.5; rx:8; }
+      .node { fill:#eef2ff; stroke:#4338ca; stroke-width:1.5; rx:8; }
+      .llm { fill:#fdf4ff; stroke:#a21caf; stroke-width:1.5; rx:8; stroke-dasharray:5 3; }
+      .io { fill:#ecfdf5; stroke:#047857; stroke-width:1.5; rx:8; }
+      .title { font-weight:600; font-size:14px; fill:#0f172a; }
+      .sub { font-size:11px; fill:#475569; }
+      .edge { stroke:#475569; stroke-width:1.5; fill:none; marker-end:url(#arrow); }
+      .lane { fill:none; stroke:#cbd5e1; stroke-dasharray:4 4; }
+      .lanetitle { font-size:12px; fill:#64748b; font-weight:600; }
+    </style>
+  </defs>
+  <rect width="980" height="560" fill="#ffffff"/>
+  <text x="20" y="28" class="title" font-size="18">Code Review Agent — grafo LangGraph con analizadores en paralelo</text>
+  <text x="20" y="46" class="sub">Nodos azules: deterministas · nodos violeta (línea punteada): usan Claude solo si hay ANTHROPIC_API_KEY · verde: I/O externo con timeout + tenacity</text>
+
+  <!-- Entrada -->
+  <rect x="20" y="80" width="170" height="70" class="io"/>
+  <text x="105" y="105" text-anchor="middle" class="title">Entrada</text>
+  <text x="105" y="122" text-anchor="middle" class="sub">POST /api/review · CLI · Action</text>
+  <text x="105" y="137" text-anchor="middle" class="sub">diff o URL de PR (GitHub REST)</text>
+
+  <!-- parse -->
+  <rect x="230" y="80" width="150" height="70" class="node"/>
+  <text x="305" y="105" text-anchor="middle" class="title">parse_diff</text>
+  <text x="305" y="122" text-anchor="middle" class="sub">FileDiff, hunks,</text>
+  <text x="305" y="137" text-anchor="middle" class="sub">numeración lado nuevo</text>
+
+  <!-- context -->
+  <rect x="420" y="80" width="160" height="70" class="node"/>
+  <text x="500" y="105" text-anchor="middle" class="title">build_context</text>
+  <text x="500" y="122" text-anchor="middle" class="sub">tree-sitter (fallback ast)</text>
+  <text x="500" y="137" text-anchor="middle" class="sub">símbolos tocados, imports</text>
+
+  <!-- fan-out lane -->
+  <rect x="20" y="185" width="940" height="150" class="lane"/>
+  <text x="30" y="203" class="lanetitle">FAN-OUT · cinco analizadores en paralelo (asyncio dentro del superstep)</text>
+
+  <rect x="40" y="220" width="170" height="90" class="llm"/>
+  <text x="125" y="243" text-anchor="middle" class="title">detect_bugs</text>
+  <text x="125" y="260" text-anchor="middle" class="sub">18 reglas estáticas</text>
+  <text x="125" y="275" text-anchor="middle" class="sub">+ pase Claude por archivo</text>
+  <text x="125" y="290" text-anchor="middle" class="sub">con contexto AST</text>
+
+  <rect x="225" y="220" width="170" height="90" class="node"/>
+  <text x="310" y="243" text-anchor="middle" class="title">check_style</text>
+  <text x="310" y="260" text-anchor="middle" class="sub">ruff (subproceso, JSON)</text>
+  <text x="310" y="275" text-anchor="middle" class="sub">solo líneas añadidas</text>
+
+  <rect x="410" y="220" width="170" height="90" class="node"/>
+  <text x="495" y="243" text-anchor="middle" class="title">scan_security</text>
+  <text x="495" y="260" text-anchor="middle" class="sub">semgrep si existe;</text>
+  <text x="495" y="275" text-anchor="middle" class="sub">23 patrones con CWE</text>
+
+  <rect x="595" y="220" width="170" height="90" class="node"/>
+  <text x="680" y="243" text-anchor="middle" class="title">review_performance</text>
+  <text x="680" y="260" text-anchor="middle" class="sub">O(n²), N+1, re.compile</text>
+  <text x="680" y="275" text-anchor="middle" class="sub">en bucle, sleep en async</text>
+
+  <rect x="780" y="220" width="165" height="90" class="node"/>
+  <text x="862" y="243" text-anchor="middle" class="title">analyze_test_gaps</text>
+  <text x="862" y="260" text-anchor="middle" class="sub">funciones públicas tocadas</text>
+  <text x="862" y="275" text-anchor="middle" class="sub">sin cambios en tests</text>
+
+  <!-- synth + priority -->
+  <rect x="230" y="380" width="200" height="80" class="llm"/>
+  <text x="330" y="405" text-anchor="middle" class="title">synthesize_comments</text>
+  <text x="330" y="422" text-anchor="middle" class="sub">sanitiza · dedupe (archivo, línea,</text>
+  <text x="330" y="437" text-anchor="middle" class="sub">categoría) · reescritura Claude opc.</text>
+
+  <rect x="480" y="380" width="170" height="80" class="node"/>
+  <text x="565" y="405" text-anchor="middle" class="title">prioritize</text>
+  <text x="565" y="422" text-anchor="middle" class="sub">score = severidad + categoría</text>
+  <text x="565" y="437" text-anchor="middle" class="sub">+ confianza · top-N · tope/archivo</text>
+
+  <rect x="700" y="380" width="250" height="80" class="io"/>
+  <text x="825" y="405" text-anchor="middle" class="title">Salida</text>
+  <text x="825" y="422" text-anchor="middle" class="sub">JSON + trace_id, latencia, tokens, cost_usd</text>
+  <text x="825" y="437" text-anchor="middle" class="sub">o review inline en GitHub (side=RIGHT)</text>
+
+  <!-- side boxes -->
+  <rect x="20" y="490" width="300" height="50" class="box"/>
+  <text x="170" y="510" text-anchor="middle" class="title">Observabilidad</text>
+  <text x="170" y="527" text-anchor="middle" class="sub">loguru + trace_id por nodo · LangSmith por env var</text>
+
+  <rect x="340" y="490" width="300" height="50" class="box"/>
+  <text x="490" y="510" text-anchor="middle" class="title">Storage</text>
+  <text x="490" y="527" text-anchor="middle" class="sub">cache LRU sha256(diff) · PostgreSQL opcional (psycopg pool)</text>
+
+  <rect x="660" y="490" width="290" height="50" class="box"/>
+  <text x="805" y="510" text-anchor="middle" class="title">Evaluación</text>
+  <text x="805" y="527" text-anchor="middle" class="sub">python -m eval.run → eval/runs/*.json → RESULTS.md</text>
+
+  <!-- edges -->
+  <path d="M190,115 L230,115" class="edge"/>
+  <path d="M380,115 L420,115" class="edge"/>
+  <path d="M500,150 L500,170 L125,170 L125,220" class="edge"/>
+  <path d="M500,170 L310,170 L310,220" class="edge"/>
+  <path d="M500,170 L500,220" class="edge"/>
+  <path d="M500,170 L680,170 L680,220" class="edge"/>
+  <path d="M500,170 L862,170 L862,220" class="edge"/>
+  <path d="M125,310 L125,355 L330,355 L330,380" class="edge"/>
+  <path d="M310,310 L310,355" class="edge"/>
+  <path d="M495,310 L495,355 L330,355" class="edge"/>
+  <path d="M680,310 L680,355 L330,355" class="edge"/>
+  <path d="M862,310 L862,355 L330,355" class="edge"/>
+  <path d="M430,420 L480,420" class="edge"/>
+  <path d="M650,420 L700,420" class="edge"/>
+</svg>

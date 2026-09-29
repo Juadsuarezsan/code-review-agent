@@ -1,519 +1,213 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Code Review Agent — Live Demo</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='12' fill='%237c5cff'/%3E%3C/svg%3E" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Code Review Agent · demo</title>
 <style>
-:root {
-    --bg: #07090f;
-    --bg-elev: #0d1220;
-    --bg-card: #12141c;
-    --bg-card-hover: #161924;
-    --border: rgba(255,255,255,0.08);
-    --border-strong: rgba(255,255,255,0.14);
-    --text: #e7ecf5;
-    --text-dim: #9aa3b8;
-    --text-faint: #5a5f6e;
-    --accent: #7c5cff;
-    --accent-2: #22d3ee;
-    --accent-3: #f472b6;
-    --success: #34d399;
-    --warning: #fbbf24;
-    --danger: #ff5a72;
-    --radius: 14px;
-    --radius-sm: 8px;
-    --max-w: 1180px;
+  :root {
+    --bg: #0f172a; --panel: #111c33; --panel2: #16213d; --text: #e2e8f0; --muted: #94a3b8;
+    --accent: #7c5cff; --add: #14532d; --add-fg: #bbf7d0; --del: #7f1d1d; --del-fg: #fecaca;
+    --err: #ef4444; --warn: #f59e0b; --info: #38bdf8; --border: #1e293b; --gt: #fbbf24;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body {
-    font-family: 'Inter', system-ui, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.6;
-    overflow-x: hidden;
-    -webkit-font-smoothing: antialiased;
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.5 Inter, "Segoe UI", system-ui, sans-serif; }
+  header { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--border); background: var(--panel); }
+  header h1 { font-size: 18px; margin: 0; }
+  header a { color: var(--accent); text-decoration: none; }
+  .badge { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #312e81; color: #c7d2fe; }
+  .disclaimer { padding: 10px 20px; background: #1e1b4b; color: #c7d2fe; font-size: 13px; border-bottom: 1px solid var(--border); }
+  main { display: grid; grid-template-columns: 300px 1fr; min-height: calc(100vh - 100px); }
+  aside { border-right: 1px solid var(--border); background: var(--panel); padding: 14px; }
+  aside h2, section h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px; }
+  .case { display: block; width: 100%; text-align: left; background: var(--panel2); border: 1px solid var(--border); color: var(--text); padding: 10px; border-radius: 8px; margin-bottom: 8px; cursor: pointer; }
+  .case.active, .case:hover { border-color: var(--accent); }
+  .case small { display: block; color: var(--muted); }
+  section { padding: 16px 20px; overflow-x: auto; }
+  .summary { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+  .stat { background: var(--panel2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; min-width: 110px; }
+  .stat b { display: block; font-size: 16px; }
+  .stat span { color: var(--muted); font-size: 12px; }
+  .file { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 16px; overflow: hidden; }
+  .file-head { background: var(--panel2); padding: 8px 12px; font-family: ui-monospace, Menlo, monospace; font-size: 13px; }
+  table.diff { border-collapse: collapse; width: 100%; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12.5px; }
+  table.diff td { padding: 1px 8px; white-space: pre; vertical-align: top; }
+  td.ln { width: 44px; text-align: right; color: var(--muted); user-select: none; border-right: 1px solid var(--border); }
+  tr.add td { background: var(--add); color: var(--add-fg); }
+  tr.del td { background: var(--del); color: var(--del-fg); }
+  tr.hunk td { background: #1e293b; color: #93c5fd; }
+  tr.gt td.code::after { content: " ◆ ground truth"; color: var(--gt); font-weight: 600; }
+  tr.comment td { background: var(--panel); white-space: normal; padding: 0; }
+  .card { margin: 6px 8px 6px 52px; border-left: 4px solid var(--info); background: var(--panel2); border-radius: 6px; padding: 8px 12px; font-family: Inter, system-ui, sans-serif; }
+  .card.error { border-color: var(--err); } .card.warning { border-color: var(--warn); }
+  .card .meta { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .card pre { margin: 6px 0 0; background: #0b1220; padding: 6px 8px; border-radius: 4px; overflow-x: auto; font-size: 12px; }
+  .try { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-top: 8px; }
+  textarea, input { width: 100%; background: #0b1220; color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 8px; font-family: ui-monospace, monospace; font-size: 12px; }
+  textarea { min-height: 140px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
+  button.primary { background: var(--accent); color: white; border: 0; padding: 9px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+  button.primary[disabled] { opacity: .6; cursor: wait; }
+  .spinner { width: 16px; height: 16px; border: 2px solid #475569; border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .error-box { color: #fecaca; background: #450a0a; border: 1px solid #7f1d1d; padding: 8px 12px; border-radius: 6px; margin-top: 8px; display: none; }
+  label.toggle { color: var(--muted); font-size: 12px; }
+  @media (max-width: 760px) {
+    main { grid-template-columns: 1fr; }
+    aside { border-right: 0; border-bottom: 1px solid var(--border); }
+    .card { margin-left: 8px; }
+    section { padding: 12px; }
   }
-  code, pre, .mono { font-family: 'JetBrains Mono', monospace; }
-  a { color: inherit; text-decoration: none; }
-  ::selection { background: var(--accent); color: white; }
-  .bg-stage {
-    position: fixed; inset: 0; z-index: -2; pointer-events: none;
-    background:
-      radial-gradient(1200px 700px at 80% -10%, rgba(124,92,255,0.22), transparent 60%),
-      radial-gradient(1000px 600px at -10% 30%, rgba(34,211,238,0.16), transparent 60%),
-      radial-gradient(900px 500px at 50% 110%, rgba(244,114,182,0.16), transparent 55%),
-      linear-gradient(180deg, #06070d 0%, #0a0e1c 100%);
-  }
-  .bg-grid {
-    position: fixed; inset: 0; z-index: -1; pointer-events: none;
-    background-image:
-      linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px);
-    background-size: 56px 56px;
-    mask-image: radial-gradient(ellipse at center, rgba(0,0,0,0.9) 0%, transparent 75%);
-    -webkit-mask-image: radial-gradient(ellipse at center, rgba(0,0,0,0.9) 0%, transparent 75%);
-  }
-  .cursor-glow {
-    position: fixed; top: 0; left: 0; width: 500px; height: 500px; z-index: -1;
-    background: radial-gradient(circle, rgba(124,92,255,0.22), transparent 55%);
-    border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%);
-    transition: opacity 0.4s ease;
-    mix-blend-mode: screen;
-  }
-  @media (max-width: 900px) { .cursor-glow { display: none; } }
-  nav {
-    position: sticky; top: 0; z-index: 50;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    background: rgba(8,9,14,0.72);
-    border-bottom: 1px solid var(--border);
-  }
-  .nav-inner {
-    max-width: var(--max-w);
-    margin: 0 auto;
-    padding: 14px 24px;
-    display: flex; align-items: center; justify-content: space-between; gap: 24px;
-  }
-  .logo {
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 600; font-size: 13px;
-    letter-spacing: 0.18em; text-transform: uppercase;
-    display: flex; align-items: center; gap: 10px;
-  }
-  .logo-text {
-    background: linear-gradient(90deg, var(--accent-2), var(--accent));
-    -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .logo-dot {
-    width: 8px; height: 8px;
-    background: var(--accent); border-radius: 50%;
-    box-shadow: 0 0 12px var(--accent);
-    animation: pulse 2s ease-in-out infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(0.85); }
-  }
-  .nav-cta {
-    padding: 8px 16px;
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius-sm);
-    font-size: 13px; font-weight: 500;
-    transition: all 0.2s;
-  }
-  .nav-cta:hover { border-color: var(--accent); background: rgba(124,92,255,0.08); }
-  .container { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
-  header { padding: 80px 0 40px; text-align: center; }
-  .eyebrow {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 6px 14px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; color: var(--text-dim);
-    letter-spacing: 0.1em; text-transform: uppercase;
-    margin-bottom: 24px;
-  }
-  .eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); box-shadow: 0 0 10px var(--success); }
-  h1 {
-    font-size: clamp(36px, 5vw, 56px);
-    font-weight: 800; line-height: 1.05; letter-spacing: -0.02em;
-    margin-bottom: 18px;
-  }
-  h1 .grad {
-    background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent) 60%, var(--accent-3) 100%);
-    -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-size: 200% auto;
-    animation: shine 8s linear infinite;
-  }
-  @keyframes shine {
-    0% { background-position: 0% 50%; }
-    100% { background-position: 200% 50%; }
-  }
-  .subtitle {
-    color: var(--text-dim);
-    font-size: clamp(15px, 1.4vw, 18px);
-    max-width: 720px;
-    margin: 0 auto 36px;
-  }
-  .metric-row {
-    display: flex; justify-content: center; gap: 32px; flex-wrap: wrap;
-    margin: 36px 0 16px;
-  }
-  .metric { text-align: center; }
-  .metric-value {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 28px; font-weight: 700;
-    background: linear-gradient(90deg, var(--accent-2), var(--accent));
-    -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .metric-label {
-    font-size: 11px; color: var(--text-dim);
-    text-transform: uppercase; letter-spacing: 0.12em;
-    margin-top: 4px;
-  }
-  section { padding: 48px 0; }
-  h2 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
-  .section-sub { color: var(--text-dim); font-size: 14px; margin-bottom: 28px; }
-  .try-box {
-    background: linear-gradient(180deg, rgba(124,92,255,0.06), rgba(34,211,238,0.04));
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius);
-    padding: 28px;
-    margin-bottom: 36px;
-  }
-  .try-box label {
-    display: block;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; color: var(--text-dim);
-    letter-spacing: 0.12em; text-transform: uppercase;
-    margin-bottom: 10px;
-  }
-  .try-box textarea {
-    width: 100%;
-    min-height: 80px;
-    padding: 14px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Inter', sans-serif;
-    font-size: 15px;
-    resize: vertical;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .try-box textarea:focus { border-color: var(--accent); }
-  .try-box-actions {
-    display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; align-items: center;
-  }
-  .btn {
-    padding: 10px 20px;
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius-sm);
-    background: transparent;
-    color: var(--text);
-    font-family: 'Inter', sans-serif;
-    font-size: 14px; font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .btn:hover { border-color: var(--accent); background: rgba(124,92,255,0.08); }
-  .btn-primary {
-    background: linear-gradient(135deg, var(--accent), var(--accent-2));
-    border-color: transparent;
-    color: white;
-  }
-  .btn-primary:hover { box-shadow: 0 6px 24px rgba(124,92,255,0.4); }
-  .api-hint {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; color: var(--text-faint);
-    margin-left: auto;
-  }
-  .api-hint code { color: var(--text-dim); }
-  .live-result {
-    margin-top: 20px;
-    padding: 20px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--bg-card);
-    display: none;
-  }
-  .live-result.show { display: block; }
-  .live-result .intent-pill {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 6px 14px;
-    background: rgba(124,92,255,0.16);
-    border: 1px solid var(--accent);
-    border-radius: 999px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px; color: var(--accent);
-  }
-  .live-result .confidence {
-    color: var(--text-dim);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px; margin-left: 10px;
-  }
-  .alt-list { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; }
-  .alt-chip {
-    padding: 4px 10px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; color: var(--text-dim);
-  }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 16px;
-  }
-  .card {
-    padding: 20px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--bg-card);
-    transition: all 0.25s;
-    cursor: pointer;
-  }
-  .card:hover {
-    border-color: var(--accent);
-    background: var(--bg-card-hover);
-    transform: translateY(-2px);
-  }
-  .card .ticket {
-    font-size: 14px; color: var(--text);
-    margin-bottom: 16px; line-height: 1.5;
-  }
-  .card .ticket::before { content: '"'; color: var(--text-faint); margin-right: 2px; }
-  .card .ticket::after  { content: '"'; color: var(--text-faint); margin-left: 2px; }
-  .card .meta {
-    display: flex; justify-content: space-between; align-items: center; gap: 10px;
-    padding-top: 14px;
-    border-top: 1px solid var(--border);
-  }
-  .card .intent {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px; color: var(--accent);
-  }
-  .card .conf {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; color: var(--text-dim);
-  }
-  .card .conf .bar {
-    display: inline-block;
-    width: 50px; height: 4px;
-    background: var(--border);
-    border-radius: 2px;
-    margin-left: 6px;
-    vertical-align: middle;
-    overflow: hidden;
-  }
-  .card .conf .bar > span {
-    display: block; height: 100%;
-    background: linear-gradient(90deg, var(--accent-2), var(--accent));
-  }
-  .card .latency {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; color: var(--text-faint);
-    margin-top: 8px;
-  }
-  .arch-section {
-    margin-top: 64px;
-    padding: 32px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--bg-card);
-  }
-  .arch-flow {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px; line-height: 2;
-    color: var(--text-dim);
-    background: var(--bg);
-    padding: 20px;
-    border-radius: var(--radius-sm);
-    overflow-x: auto;
-    white-space: pre;
-    border: 1px solid var(--border);
-  }
-  .arch-flow .key { color: var(--accent-2); }
-  .arch-flow .val { color: var(--text); }
-  .arch-flow .note { color: var(--text-faint); }
-  footer {
-    padding: 60px 0 40px;
-    text-align: center;
-    color: var(--text-faint);
-    font-size: 13px;
-    border-top: 1px solid var(--border);
-    margin-top: 80px;
-  }
-  footer a { color: var(--text-dim); border-bottom: 1px dotted var(--text-faint); }
-  footer a:hover { color: var(--accent-2); }
-
 </style>
 </head>
 <body>
-<div class="bg-stage"></div>
-<div class="bg-grid"></div>
-<div class="cursor-glow" id="cursorGlow"></div>
-
-<nav>
-  <div class="nav-inner">
-    <a href="../" class="logo">
-      <span class="logo-dot"></span>
-      <span class="logo-text">CODE·REVIEW·AGENT</span>
-    </a>
-    <a href="https://github.com/Juadsuarezsan/code-review-agent" class="nav-cta" target="_blank" rel="noopener">Repo →</a>
-  </div>
-</nav>
-
-<div class="container">
-  <header>
-    <div class="eyebrow"><span class="eyebrow-dot"></span> tree-sitter parse · diff analysis · SWE-bench Lite</div>
-    <h1>PR diffs reviewed by Claude with<br/><span class="grad">repo context and line citations.</span></h1>
-    <p class="subtitle">Reviews pull requests at the function level. Each comment cites file + line + severity. Benchmarked on SWE-bench Lite issues.</p>
-    <div class="metric-row"><div class="metric"><div class="metric-value">0.74</div><div class="metric-label">Bug-find precision</div></div><div class="metric"><div class="metric-value">0.09</div><div class="metric-label">False-positive rate</div></div><div class="metric"><div class="metric-value">20</div><div class="metric-label">SWE-bench tasks</div></div><div class="metric"><div class="metric-value">8.4 s</div><div class="metric-label">Avg per PR</div></div></div>
-  </header>
-
+<header>
+  <h1>Code Review Agent</h1>
+  <span class="badge" id="mode-badge">modo: cargando…</span>
+  <a href="https://github.com/Juadsuarezsan/code-review-agent" target="_blank" rel="noopener">GitHub ↗</a>
+  <a href="https://github.com/Juadsuarezsan/code-review-agent/blob/main/eval/RESULTS.md" target="_blank" rel="noopener">Métricas ↗</a>
+</header>
+<div class="disclaimer" id="disclaimer">Casos pre-calculados por el pipeline del repositorio en modo <b>linter-only</b> (fallback determinista, sin LLM) sobre PRs sintéticos con defectos plantados. Nada de lo que ves fue generado por un modelo.</div>
+<main>
+  <aside>
+    <h2>Casos pre-calculados</h2>
+    <div id="cases"></div>
+    <label class="toggle"><input type="checkbox" id="show-gt" checked> mostrar ground truth (◆)</label>
+  </aside>
   <section>
-    <h2>Try it yourself</h2>
-    <p class="section-sub">Type an input. If the project's FastAPI backend is running on <code>localhost:8000</code>, this calls it live; otherwise it shows the nearest pre-baked example.</p>
-    <div class="try-box">
-      <label for="ticket-input">Input</label>
-      <textarea id="ticket-input" placeholder="django/django · PR fixes off-by-one in paginator slice"></textarea>
-      <div class="try-box-actions">
-        <button class="btn btn-primary" id="classify-btn">Run →</button>
-        <button class="btn" id="random-btn">Try a random example</button>
-        <span class="api-hint">backend: <code>http://localhost:8000</code></span>
+    <div id="view"></div>
+    <div class="try">
+      <h2>Prueba tu propio diff o PR público</h2>
+      <p style="color:var(--muted);margin:4px 0 8px">Llama a <code>POST /api/review</code> del API (por defecto <code>http://localhost:8000</code>; arráncalo con <code>make run</code>). Sin <code>ANTHROPIC_API_KEY</code> responde en modo linter-only.</p>
+      <input id="api-base" value="http://localhost:8000" aria-label="URL base del API">
+      <div class="row"><input id="pr-url" placeholder="https://github.com/owner/repo/pull/123 (opcional)"></div>
+      <textarea id="diff-input" placeholder="…o pega aquí un diff unificado (git diff)"></textarea>
+      <div class="row">
+        <button class="primary" id="run">Revisar</button>
+        <div class="spinner" id="spinner"></div>
+        <span id="status" style="color:var(--muted)"></span>
       </div>
-      <div class="live-result" id="live-result"></div>
+      <div class="error-box" id="error"></div>
+      <div id="live"></div>
     </div>
   </section>
-
-  <section>
-    <h2>Pre-baked examples</h2>
-    <p class="section-sub">Real inputs the project handles, with outputs captured ahead of time. Click any card to drop it into the try-box above.</p>
-    <div class="grid" id="cards-grid"></div>
-  </section>
-
-  <section>
-    <div class="arch-section">
-      <h2>Pipeline</h2>
-      <p class="section-sub">How an input becomes a decision.</p>
-      <div class="arch-flow"><span class="key">in:</span>  <span class="val">PR diff + repo snapshot</span>
-  <span class="note">↓</span>
-<span class="key">step 1:</span>  <span class="val">tree-sitter parse → AST per changed file</span>
-  <span class="note">↓</span>
-<span class="key">step 2:</span>  <span class="val">diff hunks mapped to symbols (functions, classes)</span>
-  <span class="note">↓</span>
-<span class="key">step 3:</span>  <span class="val">context window built per symbol — include callers & callees</span>
-  <span class="note">↓</span>
-<span class="key">step 4:</span>  <span class="val">Claude reviews each symbol with surrounding context</span>
-  <span class="note">↓</span>
-<span class="key">step 5:</span>  <span class="val">comments deduped & ranked by severity</span>
-  <span class="note">↓</span>
-<span class="key">out:</span>  <span class="val">review with line-anchored comments</span></div>
-    </div>
-  </section>
-</div>
-
-<footer>
-  Part of <a href="https://juadsuarezsan.github.io/ai-portfolio/">the Juan David Suárez portfolio</a> ·
-  <a href="https://github.com/Juadsuarezsan/code-review-agent">Source code</a>
-</footer>
-
+</main>
 <script>
-  const cursorGlow = document.getElementById('cursorGlow');
-  document.addEventListener('mousemove', (e) => {
-    cursorGlow.style.left = e.clientX + 'px';
-    cursorGlow.style.top = e.clientY + 'px';
-  });
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  let data = null, active = 0;
 
-  let predictions = [];
-  const API_BASE = 'http://localhost:8000';
-
-  fetch('predictions.json').then(r => r.json()).then(data => {
-    predictions = data.predictions;
-    renderCards();
-  });
-
-  function renderCards() {
-    const grid = document.getElementById('cards-grid');
-    grid.innerHTML = '';
-    predictions.forEach(p => {
-      const card = document.createElement('div');
-      card.className = 'card';
-      const confPct = Math.round(p.confidence * 100);
-      card.innerHTML = `
-        <div class="ticket">${escapeHtml(p.ticket)}</div>
-        <div class="meta">
-          <span class="intent">${escapeHtml(p.top_intent)}</span>
-          <span class="conf">${confPct}%<span class="bar"><span style="width:${confPct}%"></span></span></span>
-        </div>
-        <div class="latency">latency: ${p.inference_ms.toFixed(0)} ms · alt: ${p.alternatives.map(a => a.intent).join(' · ')}</div>
-      `;
-      card.addEventListener('click', () => {
-        document.getElementById('ticket-input').value = p.ticket;
-        document.getElementById('ticket-input').scrollIntoView({behavior: 'smooth', block: 'center'});
-      });
-      grid.appendChild(card);
-    });
+  function parseDiff(text) {
+    const files = []; let cur = null, nl = 0, ol = 0, inHunk = false;
+    for (const raw of text.split("\n")) {
+      if (raw.startsWith("diff --git")) { cur = { path: raw.split(" b/").pop(), lines: [] }; files.push(cur); inHunk = false; continue; }
+      if (!inHunk && raw.startsWith("--- ")) { if (!cur || cur.lines.length) { cur = { path: "", lines: [] }; files.push(cur); } continue; }
+      if (!inHunk && raw.startsWith("+++ ")) { if (cur) cur.path = raw.slice(4).replace(/^b\//, ""); continue; }
+      const m = /^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/.exec(raw);
+      if (m) { if (!cur) { cur = { path: "?", lines: [] }; files.push(cur); } ol = +m[1] - 1; nl = +m[2] - 1; inHunk = true; cur.lines.push({ kind: "hunk", text: raw }); continue; }
+      if (!cur || !inHunk || raw.startsWith("\\")) continue;
+      if (raw.startsWith("+")) { nl++; cur.lines.push({ kind: "add", n: nl, text: raw.slice(1) }); }
+      else if (raw.startsWith("-")) { ol++; cur.lines.push({ kind: "del", n: null, text: raw.slice(1) }); }
+      else if (raw.startsWith(" ") || raw === "") { nl++; ol++; cur.lines.push({ kind: "ctx", n: nl, text: raw.slice(1) }); }
+    }
+    return files.filter((f) => f.lines.length);
   }
 
-  document.getElementById('classify-btn').addEventListener('click', classifyLive);
-  document.getElementById('random-btn').addEventListener('click', () => {
-    if (!predictions.length) return;
-    const p = predictions[Math.floor(Math.random() * predictions.length)];
-    document.getElementById('ticket-input').value = p.ticket;
-  });
+  function card(c) {
+    return `<div class="card ${esc(c.severity)}">
+      <div class="meta">${esc(c.severity.toUpperCase())} · ${esc(c.category)} · regla <code>${esc(c.rule_id || "n/a")}</code> · confianza ${Number(c.confidence).toFixed(2)}</div>
+      <div>${esc(c.body)}</div>
+      ${c.suggestion ? `<pre>${esc(c.suggestion)}</pre>` : ""}
+      ${c.justification ? `<div class="meta" style="margin-top:4px">Por qué: ${esc(c.justification)}</div>` : ""}
+    </div>`;
+  }
 
-  async function classifyLive() {
-    const text = document.getElementById('ticket-input').value.trim();
-    const result = document.getElementById('live-result');
-    if (!text) {
-      result.innerHTML = '<span style="color:var(--warning)">Please enter some text first.</span>';
-      result.classList.add('show');
+  function renderReview(container, diffText, review, groundTruth) {
+    const showGt = $("show-gt").checked;
+    const byKey = {};
+    for (const c of review.comments) { (byKey[c.file + ":" + c.line] = byKey[c.file + ":" + c.line] || []).push(c); }
+    const gtKeys = new Set((groundTruth || []).map((g) => g.file + ":" + g.line));
+    const files = parseDiff(diffText);
+    let html = `<div class="summary">
+      <div class="stat"><b>${review.comments.length}</b><span>comentarios</span></div>
+      <div class="stat"><b>${esc(review.mode)}</b><span>modo</span></div>
+      <div class="stat"><b>${review.latency_ms} ms</b><span>latencia</span></div>
+      <div class="stat"><b>$${Number(review.cost_usd).toFixed(4)}</b><span>costo (${review.llm_calls} llamadas LLM)</span></div>
+      <div class="stat"><b>${files.length}</b><span>archivos</span></div>
+    </div><p style="color:var(--muted)">${esc(review.summary || review.overall_summary || "")}</p>`;
+    for (const f of files) {
+      html += `<div class="file"><div class="file-head">${esc(f.path)}</div><table class="diff">`;
+      for (const l of f.lines) {
+        if (l.kind === "hunk") { html += `<tr class="hunk"><td class="ln"></td><td class="code">${esc(l.text)}</td></tr>`; continue; }
+        const key = f.path + ":" + l.n;
+        const gt = showGt && l.kind === "add" && gtKeys.has(key);
+        html += `<tr class="${l.kind}${gt ? " gt" : ""}"><td class="ln">${l.n ?? ""}</td><td class="code">${esc(l.text) || " "}</td></tr>`;
+        if (byKey[key]) html += `<tr class="comment"><td colspan="2">${byKey[key].map(card).join("")}</td></tr>`;
+      }
+      html += `</table></div>`;
+    }
+    const orphans = review.comments.filter((c) => !files.some((f) => f.path === c.file));
+    if (orphans.length) html += `<div class="file"><div class="file-head">otros comentarios</div>${orphans.map(card).join("")}</div>`;
+    container.innerHTML = html;
+  }
+
+  function renderCase(i) {
+    active = i; const c = data.cases[i];
+    document.querySelectorAll(".case").forEach((b, j) => b.classList.toggle("active", j === i));
+    const view = $("view");
+    view.innerHTML = `<h2>${esc(c.id)} · ${esc(c.title)}</h2>`;
+    const holder = document.createElement("div"); view.appendChild(holder);
+    renderReview(holder, c.diff, c.review, c.ground_truth);
+    const missed = c.ground_truth.filter((g) => !c.review.comments.some((x) => x.file === g.file && x.category === g.category && Math.abs(x.line - g.line) <= 2));
+    if (missed.length) view.insertAdjacentHTML("beforeend", `<p style="color:var(--gt)">No detectado en modo linter-only: ${missed.map((g) => esc(g.category + "@" + g.line + " (" + g.note + ")")).join("; ")}</p>`);
+  }
+
+  async function load() {
+    try {
+      const res = await fetch("predictions.json");
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      data = await res.json();
+    } catch (err) {
+      $("view").innerHTML = `<div class="error-box" style="display:block">No se pudo cargar predictions.json (${esc(err.message)}). Sirve la carpeta con <code>python -m http.server</code>.</div>`;
       return;
     }
-    result.innerHTML = '<span style="color:var(--text-dim)">Running…</span>';
-    result.classList.add('show');
+    $("mode-badge").textContent = "modo: " + data.mode + " · " + data.generated_at.slice(0, 10);
+    $("disclaimer").textContent = data.disclaimer;
+    $("cases").innerHTML = data.cases.map((c, i) => `<button class="case" data-i="${i}"><b>${esc(c.id)}</b> ${esc(c.title)}<small>${c.review.comments.length} comentarios · ${c.ground_truth.length} defectos plantados</small></button>`).join("");
+    document.querySelectorAll(".case").forEach((b) => b.addEventListener("click", () => renderCase(+b.dataset.i)));
+    $("show-gt").addEventListener("change", () => renderCase(active));
+    renderCase(0);
+  }
 
+  async function runLive() {
+    const base = $("api-base").value.replace(/\/$/, ""), diff = $("diff-input").value.trim(), pr = $("pr-url").value.trim();
+    const errBox = $("error"); errBox.style.display = "none"; $("live").innerHTML = "";
+    if (!diff && !pr) { errBox.textContent = "Pega un diff o una URL de PR."; errBox.style.display = "block"; return; }
+    const body = pr ? { pr_url: pr } : { diff };
+    $("run").disabled = true; $("spinner").style.display = "block"; $("status").textContent = "revisando…";
+    const t0 = performance.now();
     try {
-      const r = await fetch(`${API_BASE}/api/classify`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({text}),
-      });
-      if (!r.ok) throw new Error('backend non-200');
-      const data = await r.json();
-      renderLive(data, true);
-    } catch (e) {
-      const fallback = nearestBakedMatch(text);
-      renderLive(fallback, false);
-    }
+      const res = await fetch(base + "/api/review", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const detail = typeof payload.detail === "string" ? payload.detail : JSON.stringify(payload.detail || payload);
+        throw new Error(`HTTP ${res.status}: ${detail}`);
+      }
+      $("status").textContent = `ok · ${Math.round(performance.now() - t0)} ms · trace ${res.headers.get("X-Trace-Id") || payload.trace_id}`;
+      const holder = document.createElement("div"); $("live").appendChild(holder);
+      renderReview(holder, diff || "", { ...payload, summary: payload.overall_summary }, []);
+      if (pr && !diff) $("live").insertAdjacentHTML("afterbegin", `<p style="color:var(--muted)">Revisión de ${esc(pr)} (el diff se descargó en el servidor; se listan los comentarios).</p>`);
+    } catch (err) {
+      $("status").textContent = "";
+      errBox.textContent = "Error: " + err.message + (String(err.message).includes("Failed to fetch") ? " — ¿está el API corriendo y permite este origen en CORS_ORIGINS?" : "");
+      errBox.style.display = "block";
+    } finally { $("run").disabled = false; $("spinner").style.display = "none"; }
   }
 
-  function renderLive(d, isLive) {
-    const result = document.getElementById('live-result');
-    const confPct = Math.round(d.confidence * 100);
-    const alts = (d.alternatives || []).map(a =>
-      `<span class="alt-chip">${escapeHtml(a.intent)} (${Math.round(a.confidence*100)}%)</span>`).join('');
-    result.innerHTML = `
-      <div>
-        <span class="intent-pill">→ ${escapeHtml(d.top_intent)}</span>
-        <span class="confidence">${confPct}% confident · ${d.inference_ms ? d.inference_ms.toFixed(0) + ' ms' : 'cached'}</span>
-      </div>
-      <div class="alt-list">${alts}</div>
-      <div style="margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint)">
-        ${isLive ? 'source: live POST /api/classify' : 'source: nearest pre-baked example (start the backend for live inference)'}
-      </div>
-    `;
-  }
-
-  function nearestBakedMatch(text) {
-    const lo = text.toLowerCase();
-    let best = predictions[0]; let bestScore = -1;
-    predictions.forEach(p => {
-      const tokens = new Set(p.ticket.toLowerCase().split(/\W+/).filter(Boolean));
-      const myTok = new Set(lo.split(/\W+/).filter(Boolean));
-      let overlap = 0;
-      myTok.forEach(t => { if (tokens.has(t)) overlap++; });
-      if (overlap > bestScore) { bestScore = overlap; best = p; }
-    });
-    return best;
-  }
-
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  }
+  $("run").addEventListener("click", runLive);
+  load();
+})();
 </script>
 </body>
 </html>

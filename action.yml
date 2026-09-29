@@ -1,0 +1,91 @@
+name: "Code Review Agent"
+description: "Multi-aspect AI code review (static rules + ruff + security + performance + Claude) posted as inline PR comments."
+author: "Juan David Suárez Sánchez"
+branding:
+  icon: "search"
+  color: "purple"
+
+inputs:
+  github-token:
+    description: "Token used to read the PR and post the review (needs pull-requests: write)."
+    required: false
+    default: ${{ github.token }}
+  anthropic-api-key:
+    description: "Anthropic API key. Leave empty to run in linter-only mode (no LLM calls, $0)."
+    required: false
+    default: ""
+  max-comments:
+    description: "Maximum inline comments per PR."
+    required: false
+    default: "10"
+  post:
+    description: "Post the review to the PR (true) or only print it (false)."
+    required: false
+    default: "true"
+  fail-on-error:
+    description: "Fail the job when at least one error-severity finding exists."
+    required: false
+    default: "false"
+  python-version:
+    description: "Python version used to run the agent."
+    required: false
+    default: "3.11"
+
+outputs:
+  n-comments:
+    description: "Number of comments produced."
+    value: ${{ steps.review.outputs.n-comments }}
+  mode:
+    description: "linter-only or pipeline."
+    value: ${{ steps.review.outputs.mode }}
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+        cache: "pip"
+
+    - name: Install code-review-agent
+      shell: bash
+      run: pip install --quiet "${{ github.action_path }}"
+
+    - name: Review pull request
+      id: review
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
+        PR_URL: ${{ github.event.pull_request.html_url }}
+        MAX_COMMENTS: ${{ inputs.max-comments }}
+        POST: ${{ inputs.post }}
+        FAIL_ON_ERROR: ${{ inputs.fail-on-error }}
+      run: |
+        set -euo pipefail
+        if [ -z "${PR_URL}" ]; then
+          echo "::error::This action must run on a pull_request event."
+          exit 1
+        fi
+        ARGS=(review-pr --url "${PR_URL}" --max-comments "${MAX_COMMENTS}" --format json)
+        if [ "${POST}" = "true" ]; then ARGS+=(--post); fi
+        python -m src.cli "${ARGS[@]}" > review.json
+        python - <<'PY'
+        import json, os, sys
+        data = json.load(open("review.json"))
+        comments = data["comments"]
+        with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+            fh.write(f"n-comments={len(comments)}\nmode={data['mode']}\n")
+        summary = [f"## Code Review Agent — {data['summary']}", "",
+                   f"mode `{data['mode']}` · cost ${data['metrics']['cost_usd']:.4f} · "
+                   f"latency {data['metrics']['latency_ms']} ms", ""]
+        if comments:
+            summary += ["| File | Line | Severity | Category | Comment |", "|---|---|---|---|---|"]
+            summary += [f"| `{c['file']}` | {c['line']} | {c['severity']} | {c['category']} | "
+                        f"{c['body'].replace('|', '/')} |" for c in comments]
+        open(os.environ["GITHUB_STEP_SUMMARY"], "a").write("\n".join(summary) + "\n")
+        if os.environ.get("FAIL_ON_ERROR") == "true" and any(c["severity"] == "error" for c in comments):
+            print("::error::Blocking findings present")
+            sys.exit(1)
+        PY

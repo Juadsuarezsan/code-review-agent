@@ -1,0 +1,30 @@
+# Example: run the Code Review Agent on every pull request of this repository.
+# Without ANTHROPIC_API_KEY the agent runs in linter-only mode (no LLM calls, $0).
+# To use it from another repository replace `uses: ./` with
+#   uses: Juadsuarezsan/code-review-agent@v0.6.0
+name: Code review (agent)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Review the pull request
+        id: agent
+        uses: ./
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          max-comments: "10"
+          post: "true"
+          fail-on-error: "false"
+      - name: Print outputs
+        run: echo "mode=${{ steps.agent.outputs.mode }} comments=${{ steps.agent.outputs.n-comments }}"
