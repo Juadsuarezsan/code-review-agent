@@ -1,0 +1,31 @@
+# docker compose up --build
+# Validation of this file is PENDING: the development environment has no Docker daemon.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: review
+      POSTGRES_PASSWORD: review_dev
+      POSTGRES_DB: review
+    ports: ["5432:5432"]
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U review -d review"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://review:review_dev@postgres:5432/review
+      CORS_ORIGINS: http://localhost:3000,http://localhost:8000
+      LOG_LEVEL: INFO
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports: ["8000:8000"]
+
+volumes:
+  postgres-data:
