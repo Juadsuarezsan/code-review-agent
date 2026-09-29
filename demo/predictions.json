@@ -1,0 +1,625 @@
+{
+  "project": "code-review-agent",
+  "generated_at": "2026-09-29T01:30:48+00:00",
+  "mode": "linter-only",
+  "disclaimer": "Pre-baked reviews produced by the repository pipeline in linter-only mode (deterministic fallback, no LLM). Cases are synthetic PRs with planted defects.",
+  "cases": [
+    {
+      "id": "syn-001",
+      "title": "Config loader swallows every exception",
+      "synthetic": true,
+      "diff": "diff --git a/app/config.py b/app/config.py\n--- a/app/config.py\n+++ b/app/config.py\n@@ -2,5 +2,8 @@\n \n \n def load(path):\n-    with open(path) as fh:\n-        return json.load(fh)\n+    try:\n+        with open(path) as fh:\n+            return json.load(fh)\n+    except:\n+        return {}\ndiff --git a/tests/test_config.py b/tests/test_config.py\n--- a/tests/test_config.py\n+++ b/tests/test_config.py\n@@ -3,3 +3,7 @@\n \n def test_smoke():\n     assert load\n+\n+\n+def test_load_change():\n+    assert load('missing.json') == {}\n",
+      "ground_truth": [
+        {
+          "file": "app/config.py",
+          "line": 8,
+          "category": "bug",
+          "note": "bare except hides missing file and JSON errors"
+        }
+      ],
+      "review": {
+        "mode": "linter-only",
+        "summary": "1 comment(s) across 2 file(s): 1 error, 0 warning, 0 info.",
+        "comments": [
+          {
+            "file": "app/config.py",
+            "line": 8,
+            "severity": "error",
+            "category": "bug",
+            "body": "Bare `except:` swallows every error, including KeyboardInterrupt and SystemExit.",
+            "suggestion": "except (ValueError, KeyError) as exc:  # name the exceptions you expect",
+            "justification": "Broad handlers hide real failures and make debugging impossible.",
+            "rule_id": "static:bare-except + ruff:E722",
+            "source": "static",
+            "confidence": 0.9
+          }
+        ],
+        "latency_ms": 38,
+        "cost_usd": 0.0,
+        "llm_calls": 0,
+        "node_timings": [
+          {
+            "node": "parse_diff",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "build_context",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "detect_bugs",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 1
+          },
+          {
+            "node": "review_performance",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "analyze_test_gaps",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "scan_security",
+            "latency_ms": 2,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "check_style",
+            "latency_ms": 31,
+            "comments_in": 0,
+            "comments_out": 1
+          },
+          {
+            "node": "synthesize_comments",
+            "latency_ms": 0,
+            "comments_in": 2,
+            "comments_out": 1
+          },
+          {
+            "node": "prioritize",
+            "latency_ms": 0,
+            "comments_in": 1,
+            "comments_out": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "syn-014",
+      "title": "Shell command built from user input",
+      "synthetic": true,
+      "diff": "diff --git a/app/backup.py b/app/backup.py\n--- a/app/backup.py\n+++ b/app/backup.py\n@@ -1,5 +1,5 @@\n-import subprocess\n+import os\n \n \n def backup(name):\n-    subprocess.run(['tar', 'czf', f'{name}.tgz', name], check=True)\n+    os.system('tar czf ' + name + '.tgz ' + name)\ndiff --git a/tests/test_backup.py b/tests/test_backup.py\n--- a/tests/test_backup.py\n+++ b/tests/test_backup.py\n@@ -3,3 +3,7 @@\n \n def test_smoke():\n     assert backup\n+\n+\n+def test_backup_change():\n+    assert backup\n",
+      "ground_truth": [
+        {
+          "file": "app/backup.py",
+          "line": 5,
+          "category": "security",
+          "note": "CWE-78 command injection"
+        }
+      ],
+      "review": {
+        "mode": "linter-only",
+        "summary": "1 comment(s) across 2 file(s): 1 error, 0 warning, 0 info.",
+        "comments": [
+          {
+            "file": "app/backup.py",
+            "line": 5,
+            "severity": "error",
+            "category": "security",
+            "body": "`os.system`/`os.popen` run through a shell; user input becomes a command. [CWE-78].",
+            "suggestion": "subprocess.run([\"cmd\", arg], check=True)",
+            "justification": "Matches pattern rule `shell-injection-system` (CWE-78).",
+            "rule_id": "pattern:shell-injection-system",
+            "source": "pattern",
+            "confidence": 0.9
+          }
+        ],
+        "latency_ms": 35,
+        "cost_usd": 0.0,
+        "llm_calls": 0,
+        "node_timings": [
+          {
+            "node": "parse_diff",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "build_context",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "detect_bugs",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "review_performance",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "analyze_test_gaps",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "scan_security",
+            "latency_ms": 1,
+            "comments_in": 0,
+            "comments_out": 1
+          },
+          {
+            "node": "check_style",
+            "latency_ms": 31,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "synthesize_comments",
+            "latency_ms": 0,
+            "comments_in": 1,
+            "comments_out": 1
+          },
+          {
+            "node": "prioritize",
+            "latency_ms": 0,
+            "comments_in": 1,
+            "comments_out": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "syn-017",
+      "title": "SQL built with f-string",
+      "synthetic": true,
+      "diff": "diff --git a/app/users.py b/app/users.py\n--- a/app/users.py\n+++ b/app/users.py\n@@ -1,3 +1,3 @@\n def find(cur, email):\n-    cur.execute('SELECT id FROM users WHERE email = %s', (email,))\n+    cur.execute(f\"SELECT id FROM users WHERE email = '{email}'\")\n     return cur.fetchone()\ndiff --git a/tests/test_users.py b/tests/test_users.py\n--- a/tests/test_users.py\n+++ b/tests/test_users.py\n@@ -3,3 +3,7 @@\n \n def test_smoke():\n     assert find\n+\n+\n+def test_find_change():\n+    assert find\n",
+      "ground_truth": [
+        {
+          "file": "app/users.py",
+          "line": 2,
+          "category": "security",
+          "note": "CWE-89"
+        }
+      ],
+      "review": {
+        "mode": "linter-only",
+        "summary": "1 comment(s) across 2 file(s): 1 error, 0 warning, 0 info.",
+        "comments": [
+          {
+            "file": "app/users.py",
+            "line": 2,
+            "severity": "error",
+            "category": "security",
+            "body": "SQL statement built with string formatting; use parameter binding. [CWE-89].",
+            "suggestion": "cursor.execute(\"SELECT ... WHERE id = %s\", (user_id,))",
+            "justification": "Matches pattern rule `sql-injection-format` (CWE-89).",
+            "rule_id": "pattern:sql-injection-format",
+            "source": "pattern",
+            "confidence": 0.85
+          }
+        ],
+        "latency_ms": 35,
+        "cost_usd": 0.0,
+        "llm_calls": 0,
+        "node_timings": [
+          {
+            "node": "parse_diff",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "build_context",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "detect_bugs",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "review_performance",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "analyze_test_gaps",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "scan_security",
+            "latency_ms": 1,
+            "comments_in": 0,
+            "comments_out": 1
+          },
+          {
+            "node": "check_style",
+            "latency_ms": 30,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "synthesize_comments",
+            "latency_ms": 0,
+            "comments_in": 1,
+            "comments_out": 1
+          },
+          {
+            "node": "prioritize",
+            "latency_ms": 0,
+            "comments_in": 1,
+            "comments_out": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "syn-023",
+      "title": "Quadratic string building",
+      "synthetic": true,
+      "diff": "diff --git a/app/render.py b/app/render.py\n--- a/app/render.py\n+++ b/app/render.py\n@@ -1,2 +1,5 @@\n def render(rows):\n-    return ''.join(f'{r}\\n' for r in rows)\n+    out = ''\n+    for r in rows:\n+        out += f'{r}\\n'\n+    return out\ndiff --git a/tests/test_render.py b/tests/test_render.py\n--- a/tests/test_render.py\n+++ b/tests/test_render.py\n@@ -3,3 +3,7 @@\n \n def test_smoke():\n     assert render\n+\n+\n+def test_render_change():\n+    assert render\n",
+      "ground_truth": [
+        {
+          "file": "app/render.py",
+          "line": 4,
+          "category": "performance",
+          "note": "O(n^2) copying"
+        }
+      ],
+      "review": {
+        "mode": "linter-only",
+        "summary": "1 comment(s) across 2 file(s): 0 error, 1 warning, 0 info.",
+        "comments": [
+          {
+            "file": "app/render.py",
+            "line": 4,
+            "severity": "warning",
+            "category": "performance",
+            "body": "String `out` grows by `+=` inside a loop (quadratic copying).",
+            "suggestion": "parts.append(piece)  # then ''.join(parts) after the loop",
+            "justification": "Each `+=` copies the whole string; use a list and join once.",
+            "rule_id": "perf:quadratic-str-concat",
+            "source": "performance",
+            "confidence": 0.7
+          }
+        ],
+        "latency_ms": 35,
+        "cost_usd": 0.0,
+        "llm_calls": 0,
+        "node_timings": [
+          {
+            "node": "parse_diff",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "build_context",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "detect_bugs",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "review_performance",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 1
+          },
+          {
+            "node": "analyze_test_gaps",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "scan_security",
+            "latency_ms": 5,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "check_style",
+            "latency_ms": 30,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "synthesize_comments",
+            "latency_ms": 0,
+            "comments_in": 1,
+            "comments_out": 1
+          },
+          {
+            "node": "prioritize",
+            "latency_ms": 0,
+            "comments_in": 1,
+            "comments_out": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "syn-024",
+      "title": "List membership inside loop",
+      "synthetic": true,
+      "diff": "diff --git a/app/dedupe.py b/app/dedupe.py\n--- a/app/dedupe.py\n+++ b/app/dedupe.py\n@@ -1,2 +1,8 @@\n def dedupe(items):\n-    return list(dict.fromkeys(items))\n+    seen = []\n+    out = []\n+    for item in items:\n+        if item not in seen:\n+            seen.append(item)\n+            out.append(item)\n+    return out\ndiff --git a/tests/test_dedupe.py b/tests/test_dedupe.py\n--- a/tests/test_dedupe.py\n+++ b/tests/test_dedupe.py\n@@ -3,3 +3,7 @@\n \n def test_smoke():\n     assert dedupe\n+\n+\n+def test_dedupe_change():\n+    assert dedupe\n",
+      "ground_truth": [
+        {
+          "file": "app/dedupe.py",
+          "line": 5,
+          "category": "performance",
+          "note": "O(n^2) membership"
+        }
+      ],
+      "review": {
+        "mode": "linter-only",
+        "summary": "1 comment(s) across 2 file(s): 0 error, 1 warning, 0 info.",
+        "comments": [
+          {
+            "file": "app/dedupe.py",
+            "line": 5,
+            "severity": "warning",
+            "category": "performance",
+            "body": "Membership test `in seen` on a list inside a loop is O(n) per check.",
+            "suggestion": "seen_set = set(seen)  # then `in seen_set`",
+            "justification": "Lists scan linearly; sets and dicts test membership in O(1).",
+            "rule_id": "perf:list-membership-in-loop",
+            "source": "performance",
+            "confidence": 0.7
+          }
+        ],
+        "latency_ms": 40,
+        "cost_usd": 0.0,
+        "llm_calls": 0,
+        "node_timings": [
+          {
+            "node": "parse_diff",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "build_context",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "detect_bugs",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "review_performance",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 1
+          },
+          {
+            "node": "analyze_test_gaps",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "scan_security",
+            "latency_ms": 1,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "check_style",
+            "latency_ms": 35,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "synthesize_comments",
+            "latency_ms": 0,
+            "comments_in": 1,
+            "comments_out": 1
+          },
+          {
+            "node": "prioritize",
+            "latency_ms": 0,
+            "comments_in": 1,
+            "comments_out": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "syn-031",
+      "title": "New public function without tests",
+      "synthetic": true,
+      "diff": "diff --git a/app/pricing.py b/app/pricing.py\n--- a/app/pricing.py\n+++ b/app/pricing.py\n@@ -1,2 +1,6 @@\n def net(price, tax):\n     return price * (1 + tax)\n+\n+\n+def gross_margin(price, cost):\n+    return (price - cost) / price\n",
+      "ground_truth": [
+        {
+          "file": "app/pricing.py",
+          "line": 5,
+          "category": "test_gap",
+          "note": "no test added"
+        }
+      ],
+      "review": {
+        "mode": "linter-only",
+        "summary": "1 comment(s) across 1 file(s): 0 error, 1 warning, 0 info.",
+        "comments": [
+          {
+            "file": "app/pricing.py",
+            "line": 5,
+            "severity": "warning",
+            "category": "test_gap",
+            "body": "`gross_margin` changed and the PR adds no tests.",
+            "suggestion": "Add `test_gross_margin` in tests/test_pricing.py covering the new branch.",
+            "justification": "Untested public behaviour regresses silently.",
+            "rule_id": "test_gap:public-fn-without-tests",
+            "source": "test_gap",
+            "confidence": 0.7
+          }
+        ],
+        "latency_ms": 32,
+        "cost_usd": 0.0,
+        "llm_calls": 0,
+        "node_timings": [
+          {
+            "node": "parse_diff",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "build_context",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "detect_bugs",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "review_performance",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "analyze_test_gaps",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 1
+          },
+          {
+            "node": "scan_security",
+            "latency_ms": 1,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "check_style",
+            "latency_ms": 28,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "synthesize_comments",
+            "latency_ms": 0,
+            "comments_in": 1,
+            "comments_out": 1
+          },
+          {
+            "node": "prioritize",
+            "latency_ms": 0,
+            "comments_in": 1,
+            "comments_out": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "syn-035",
+      "title": "Clean: explicit exception and logging",
+      "synthetic": true,
+      "diff": "diff --git a/app/clean2.py b/app/clean2.py\n--- a/app/clean2.py\n+++ b/app/clean2.py\n@@ -4,4 +4,11 @@\n \n \n def parse_port(text):\n-    return int(text)\n+    try:\n+        port = int(text)\n+    except ValueError as exc:\n+        log.warning('invalid port %r: %s', text, exc)\n+        raise\n+    if not 0 < port < 65536:\n+        raise ValueError(f'port out of range: {port}')\n+    return port\ndiff --git a/tests/test_clean2.py b/tests/test_clean2.py\n--- a/tests/test_clean2.py\n+++ b/tests/test_clean2.py\n@@ -3,3 +3,7 @@\n \n def test_smoke():\n     assert parse_port\n+\n+\n+def test_parse_port_change():\n+    assert parse_port('80') == 80\n",
+      "ground_truth": [],
+      "review": {
+        "mode": "linter-only",
+        "summary": "Reviewed 2 file(s); no issues flagged.",
+        "comments": [],
+        "latency_ms": 58,
+        "cost_usd": 0.0,
+        "llm_calls": 0,
+        "node_timings": [
+          {
+            "node": "parse_diff",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "build_context",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "detect_bugs",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "review_performance",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "analyze_test_gaps",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "scan_security",
+            "latency_ms": 2,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "check_style",
+            "latency_ms": 53,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "synthesize_comments",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          },
+          {
+            "node": "prioritize",
+            "latency_ms": 0,
+            "comments_in": 0,
+            "comments_out": 0
+          }
+        ]
+      }
+    }
+  ]
+}
