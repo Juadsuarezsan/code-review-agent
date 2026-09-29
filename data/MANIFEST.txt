@@ -1,0 +1,5 @@
+# Data manifest — regenerate with: python scripts/download_data.py --manifest-only
+# sha256  bytes  rows  path  # note
+6213ca11c0c347a37011cc3a5f00374bb0a6fde21855703b196316c8801de223  27407  38  data/eval/cases.jsonl  # synthetic eval set, hand-written GT
+# MISSING  data/raw/swebench_lite_test.jsonl  # SWE-bench Lite test split (download)
+# MISSING  data/processed/swebench_lite_ground_truth.jsonl  # hunk-level GT derived from patch
