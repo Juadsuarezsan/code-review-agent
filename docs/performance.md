@@ -55,7 +55,7 @@ re-ejecución sobre el mismo diff —el caso típico de la Action al re-lanzar u
 | `pytest --cov=src --cov-fail-under=70` | verde, cobertura 97,7 % (`src/`) |
 | `ruff check .` · `black --check .` | sin hallazgos |
 | `mypy --strict src/` | sin errores (38 archivos) |
-| `gitleaks detect --no-banner --redact` (v8.21.2, binario de GitHub Releases) | 21 commits escaneados, **no leaks found** |
+| `gitleaks detect --no-banner --redact` (v8.21.2, binario de GitHub Releases) | 32 commits escaneados, **no leaks found**. `.gitleaks.toml` allowlista el token sintético `sk-live-…` del caso `syn-018` del eval set, plantado a propósito como CWE-798 |
 | `python -m eval.run --mode linter-only` | regenera `eval/RESULTS.md` sin intervención |
 
 Pendiente por entorno: `docker compose up` (sin demonio Docker), traces en LangSmith y
