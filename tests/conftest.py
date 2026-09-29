@@ -64,10 +64,12 @@ class FakeClaudeClient:
         *,
         enabled: bool = True,
         model: str = PINNED_MODEL,
+        default: Any | None = None,
     ) -> None:
         self.responses = list(responses or [])
         self.enabled = enabled
         self.model = model
+        self.default = default
         self.calls: list[tuple[str, str]] = []
 
     async def complete(
@@ -75,8 +77,11 @@ class FakeClaudeClient:
     ) -> LLMResult:
         self.calls.append((system, user))
         if not self.responses:
-            raise AssertionError("FakeClaudeClient has no responses left")
-        item = self.responses.pop(0)
+            if self.default is None:
+                raise AssertionError("FakeClaudeClient has no responses left")
+            item = self.default
+        else:
+            item = self.responses.pop(0)
         if isinstance(item, BaseException):
             raise item
         text = item if isinstance(item, str) else json.dumps(item)

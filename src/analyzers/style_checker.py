@@ -70,6 +70,7 @@ BUG_CODES: frozenset[str] = frozenset(
         "E722",
         "E902",
         "E999",
+        "SIM115",  # open() without a context manager is a resource leak, not a style nit
     }
 )
 ERROR_CODES: frozenset[str] = frozenset(

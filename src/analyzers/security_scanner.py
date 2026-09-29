@@ -162,7 +162,8 @@ PATTERN_RULES: list[_PatternRule] = [
     ),
     _p(
         "hardcoded-secret",
-        r"(?i)\b(password|passwd|pwd|secret|api_key|apikey|token|private_key)\s*[:=]\s*[\"'][^\"']{6,}[\"']",
+        r"(?i)\b\w*(password|passwd|pwd|secret|api_?key|token|private_key)\w*\s*[:=]\s*"
+        r"[\"'][^\"']{6,}[\"']",
         "error",
         "CWE-798",
         "Hard-coded credential in source code.",
